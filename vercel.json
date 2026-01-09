@@ -1,11 +1,11 @@
 {
   "version": 2,
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/backend/api/index.ts" },
+    { "source": "/api/(.*)", "destination": "/api/index.ts" },
     { "source": "/(.*)", "destination": "/frontend/dist/$1" }
   ],
   "functions": {
-    "backend/api/index.ts": {
+    "api/index.ts": {
       "includeFiles": "backend/src/**"
     }
   },

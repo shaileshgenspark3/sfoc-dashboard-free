@@ -1,5 +1,5 @@
-import { app } from '../server.js';
-import { connectDB } from '../src/config/database.js';
+import { app } from '../backend/server.js';
+import { connectDB } from '../backend/src/config/database.js';
 
 // Vercel Serverless Function Handler
 export default async function handler(req: any, res: any) {
