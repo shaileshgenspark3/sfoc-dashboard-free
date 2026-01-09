@@ -7,7 +7,6 @@ import {
   MapPin, 
   Clock, 
   Users, 
-  Send,
   ShieldCheck,
   Zap,
   Flame,
@@ -15,8 +14,8 @@ import {
   Bike,
   Timer,
   Dumbbell,
-  Move,
-  ChevronDown
+  ChevronDown,
+  ArrowRight
 } from 'lucide-react';
 import Confetti, { smallBurst } from '../components/Confetti';
 import { activitiesApi, ActivitySubmission } from '../services/api';
@@ -53,7 +52,6 @@ const SubmitActivity = () => {
       return;
     }
 
-    // Custom Validation for Yoga and Gym
     if (formData.activityType === 'Yoga' && formData.duration && parseInt(formData.duration) < 30) {
       toast.error('VALIDATION_ERROR: YOGA_MINIMUM_30_MINS');
       return;
@@ -103,7 +101,6 @@ const SubmitActivity = () => {
     <div className="max-w-4xl mx-auto space-y-8 md:space-y-12 py-4 md:py-8 px-4 sm:px-0">
       <Confetti trigger={success} />
       
-      {/* Header */}
       <header className="flex flex-col md:flex-row md:items-end justify-between border-b-2 border-[#FF6B35] pb-4 md:pb-6 gap-4">
         <div>
           <div className="tech-label text-[#FF6B35]">UPLINK_MODULE: FIT-O-CHARITY_V2</div>
@@ -161,7 +158,6 @@ const SubmitActivity = () => {
             onSubmit={handleSubmit}
             className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8"
           >
-            {/* Primary Inputs */}
             <div className="lg:col-span-7 space-y-6 md:space-y-8">
               <div className="industrial-panel p-6 md:p-8 space-y-4 md:space-y-6 border-l-4 border-l-[#FF6B35]">
                 <div className="flex items-center gap-3">
@@ -217,7 +213,6 @@ const SubmitActivity = () => {
               </div>
             </div>
 
-            {/* Secondary/Optional Inputs */}
             <div className="lg:col-span-5 space-y-6 md:space-y-8">
               <div className="industrial-panel p-6 md:p-8 space-y-4 md:space-y-6 bg-[#1A1A1A]/50">
                 <div className="grid grid-cols-2 gap-4">
@@ -284,7 +279,6 @@ const SubmitActivity = () => {
         )}
       </AnimatePresence>
 
-      {/* Protocol Footer */}
       <footer className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 pt-4 md:pt-8">
         {[
           { label: "PROTOCOL", val: "UPLINK_v2.0" },
@@ -295,22 +289,6 @@ const SubmitActivity = () => {
           <div key={i} className="p-3 md:p-4 border border-[#2D2D2D] bg-[#1A1A1A]/30">
             <div className="tech-label opacity-50 text-[8px] md:text-[10px]">{item.label}</div>
             <div className="text-[8px] md:text-[10px] font-bold text-white tracking-widest truncate">{item.val}</div>
-          </div>
-        ))}
-      </footer>
-    </div>
-
-      {/* Protocol Footer */}
-      <footer className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-8">
-        {[
-          { label: "PROTOCOL", val: "FOC_UPLINK_v2.0" },
-          { label: "TIMESTAMP", val: new Date().toISOString().split('T')[1].split('.')[0] },
-          { label: "ENCRYPTION", val: "AES_256_GCM" },
-          { label: "LATENCY", val: "24ms" }
-        ].map((item, i) => (
-          <div key={i} className="p-4 border border-[#2D2D2D] bg-[#1A1A1A]/30">
-            <div className="tech-label opacity-50">{item.label}</div>
-            <div className="text-[10px] font-bold text-white tracking-widest">{item.val}</div>
           </div>
         ))}
       </footer>
