@@ -3,10 +3,8 @@ builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile"
 
 [deploy]
-startCommand = "node backend/dist/server.js"
 healthCheckPath = "/api/health"
 restartPolicyType = "ON_FAILURE"
 
 [deploy.env]
-PORT = "8080"
 NODE_ENV = "production"
