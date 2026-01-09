@@ -135,18 +135,18 @@ const Leaderboard = () => {
       )}
 
       {/* Full Registry */}
-      <div className="industrial-panel overflow-hidden border-l-4 border-l-[#FF6B35]">
+      <div className="industrial-panel overflow-hidden border-l-2 md:border-l-4 border-l-[#FF6B35]">
         <div className="p-4 bg-[#262626] border-b border-[#3F3F3F] flex justify-between items-center">
           <div className="flex items-center gap-3">
             <Target className="text-[#FF6B35]" size={18} />
-            <h3 className="text-sm font-bold tracking-widest">FULL_REGISTRY_INDEX</h3>
+            <h3 className="text-xs md:text-sm font-bold tracking-widest">FULL_REGISTRY_INDEX</h3>
           </div>
-          <span className="text-[10px] font-bold text-[#4A4A4A] tracking-widest">COUNT: {leaderboard.length}</span>
+          <span className="text-[10px] font-bold text-[#4A4A4A] tracking-widest hidden sm:inline">COUNT: {leaderboard.length}</span>
         </div>
 
         <div className="divide-y divide-[#3F3F3F]">
           {loading ? (
-            <div className="p-20 flex flex-col items-center justify-center gap-4">
+            <div className="p-12 md:p-20 flex flex-col items-center justify-center gap-4">
               <div className="w-8 h-8 border-2 border-[#FF6B35] border-t-transparent animate-spin" />
               <div className="tech-label animate-pulse">RETRIVING_DATA_PACKETS...</div>
             </div>
@@ -157,29 +157,29 @@ const Leaderboard = () => {
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
                 viewport={{ once: true }}
-                className="p-4 flex items-center gap-6 group hover:bg-[#262626] transition-colors"
+                className="p-3 md:p-4 flex items-center gap-3 md:gap-6 group hover:bg-[#262626] transition-colors"
               >
-                <div className="w-8 text-sm font-black text-[#4A4A4A] group-hover:text-[#FF6B35]">
+                <div className="w-6 md:w-8 text-xs md:text-sm font-black text-[#4A4A4A] group-hover:text-[#FF6B35]">
                   {(index + 1).toString().padStart(2, '0')}
                 </div>
                 
-                <div className="w-10 h-10 border border-[#3F3F3F] flex items-center justify-center font-bold text-white group-hover:border-[#FF6B35]">
+                <div className="w-8 h-8 md:w-10 md:h-10 border border-[#3F3F3F] flex items-center justify-center font-bold text-white group-hover:border-[#FF6B35] flex-shrink-0">
                   {p.name.charAt(0)}
                 </div>
                 
                 <div className="flex-1 min-w-0">
-                  <h4 className="text-sm font-bold text-white truncate uppercase">{p.name}</h4>
-                  <p className="text-[10px] text-[#4A4A4A] font-bold tracking-wider">{p.individualCode}</p>
+                  <h4 className="text-xs md:text-sm font-bold text-white truncate uppercase">{p.name}</h4>
+                  <p className="text-[8px] md:text-[10px] text-[#4A4A4A] font-bold tracking-wider">{p.individualCode}</p>
                 </div>
 
-                <div className="hidden sm:flex flex-col items-end min-w-[100px]">
-                  <div className="tech-label">TOTAL_POINTS</div>
-                  <div className="text-sm font-bold text-[#FF6B35]">{(p.totalPoints || 0).toLocaleString()}</div>
+                <div className="flex flex-col items-end min-w-[70px] md:min-w-[100px]">
+                  <div className="tech-label text-[8px] md:text-[10px]">POINTS</div>
+                  <div className="text-xs md:text-sm font-bold text-[#FF6B35]">{(p.totalPoints || 0).toLocaleString()}</div>
                 </div>
 
-                <div className="hidden md:flex flex-col items-end min-w-[100px]">
+                <div className="hidden sm:flex flex-col items-end min-w-[80px] md:min-w-[100px]">
                   <div className="tech-label">DISTANCE</div>
-                  <div className="text-sm font-bold">{p.totalDistance.toFixed(1)} KM</div>
+                  <div className="text-xs md:text-sm font-bold">{p.totalDistance.toFixed(1)} KM</div>
                 </div>
               </motion.div>
             ))

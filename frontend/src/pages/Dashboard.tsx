@@ -93,44 +93,44 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-8 md:space-y-12">
       <Confetti trigger={newActivity} />
       
       {/* Hero Section */}
-      <section className="relative pt-12">
-        <div className="absolute top-0 left-0 w-24 h-24 border-t-2 border-l-2 border-[#3F3F3F]" />
-        <div className="absolute bottom-0 right-0 w-24 h-24 border-b-2 border-r-2 border-[#3F3F3F]" />
+      <section className="relative pt-6 md:pt-12">
+        <div className="absolute top-0 left-0 w-12 h-12 md:w-24 md:h-24 border-t-2 border-l-2 border-[#3F3F3F]" />
+        <div className="absolute bottom-0 right-0 w-12 h-12 md:w-24 md:h-24 border-b-2 border-r-2 border-[#3F3F3F]" />
         
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-          <div className="lg:col-span-8 space-y-6">
-            <div className="flex items-center gap-4">
-              <div className="px-3 py-1 bg-[#262626] border border-[#3F3F3F] text-[#8C8C8C] text-[10px] font-bold tracking-[0.2em]">
+          <div className="lg:col-span-8 space-y-4 md:space-y-6">
+            <div className="flex flex-wrap items-center gap-2 md:gap-4">
+              <div className="px-2 md:px-3 py-1 bg-[#262626] border border-[#3F3F3F] text-[#8C8C8C] text-[8px] md:text-[10px] font-bold tracking-[0.2em]">
                 STATUS: ACTIVE_CHALLENGE
               </div>
-              <div className="px-3 py-1 bg-[#FF6B35]/10 border border-[#FF6B35]/30 text-[#FF6B35] text-[10px] font-bold tracking-[0.2em]">
-                PHASE: 01_JAN_FEB_2025
+              <div className="px-2 md:px-3 py-1 bg-[#FF6B35]/10 border border-[#FF6B35]/30 text-[#FF6B35] text-[8px] md:text-[10px] font-bold tracking-[0.2em]">
+                PHASE: 01_JAN_FEB_2026
               </div>
             </div>
 
-            <h1 className="text-5xl md:text-8xl font-black tracking-tighter leading-[0.9] text-white">
+            <h1 className="text-4xl sm:text-5xl md:text-8xl font-black tracking-tighter leading-[0.9] text-white break-words">
               FIT-O-CHARITY <br />
               <span className="text-[#FF6B35]">BY_SUKRUT_PARIVAR</span>
             </h1>
 
-            <p className="text-lg text-[#8C8C8C] max-w-xl font-medium leading-relaxed">
+            <p className="text-base md:text-lg text-[#8C8C8C] max-w-xl font-medium leading-relaxed">
               Tactical fitness tracking for the elite performer. Log your daily output, monitor system-wide metrics, and dominate the ranking protocols.
             </p>
 
-            <div className="flex flex-wrap gap-4 pt-4">
-              <Link to="/submit">
-                <button className="btn-safety flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row gap-4 pt-4">
+              <Link to="/submit" className="w-full sm:w-auto">
+                <button className="btn-safety w-full flex items-center justify-center gap-3 py-4 sm:py-3 px-8">
                   <Zap size={20} fill="currentColor" />
                   INITIATE_LOG
                   <ArrowRight size={18} />
                 </button>
               </Link>
-              <Link to="/leaderboard">
-                <button className="px-8 py-3 bg-[#262626] border border-[#3F3F3F] text-white font-bold uppercase tracking-wider hover:border-[#FF6B35] transition-colors flex items-center gap-3">
+              <Link to="/leaderboard" className="w-full sm:w-auto">
+                <button className="w-full px-8 py-4 sm:py-3 bg-[#262626] border border-[#3F3F3F] text-white font-bold uppercase tracking-wider hover:border-[#FF6B35] transition-colors flex items-center justify-center gap-3">
                   <Trophy size={18} />
                   RANK_PROTOCOLS
                 </button>
