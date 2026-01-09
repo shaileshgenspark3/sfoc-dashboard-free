@@ -1,0 +1,12 @@
+{
+  "name": "fit-o-charity-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "postinstall": "cd frontend && npm install && cd ../backend && npm install",
+    "build": "cd backend && npm run build && cd ../frontend && npm run build"
+  },
+  "engines": {
+    "node": "18.x"
+  }
+}
