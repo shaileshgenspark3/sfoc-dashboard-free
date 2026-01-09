@@ -14,6 +14,7 @@ import activityRoutes from './src/routes/activities.js';
 import participantRoutes from './src/routes/participants.js';
 import groupRoutes from './src/routes/groups.js';
 import settingsRoutes from './src/routes/settings.js';
+import vercelCronRoutes from './src/routes/vercelCron.js';
 
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -50,6 +51,7 @@ app.use('/api/activities', activityRoutes);
 app.use('/api/participants', participantRoutes);
 app.use('/api/groups', groupRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api/cron', vercelCronRoutes);
 
 // Static Files - Serve Frontend
 const frontendPath = path.join(__dirname, '../frontend/dist');
@@ -73,15 +75,18 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
-httpServer.listen(Number(PORT), '0.0.0.0', () => {
-  console.log(`
-  🌟 FIT-O-CHARITY BACKEND V2 🌟
-  ---------------------------------------
-  🚀 Server:  http://localhost:${PORT}
-  📡 Status:  Active
-  🛠️  Mode:    ${process.env.NODE_ENV || 'development'}
-  ---------------------------------------
-  `);
-});
+// Only start server if run directly (not imported)
+if (import.meta.url === `file://${process.argv[1]}`) {
+  httpServer.listen(Number(PORT), '0.0.0.0', () => {
+    console.log(`
+    🌟 FIT-O-CHARITY BACKEND V2 🌟
+    ---------------------------------------
+    🚀 Server:  http://localhost:${PORT}
+    📡 Status:  Active
+    🛠️  Mode:    ${process.env.NODE_ENV || 'development'}
+    ---------------------------------------
+    `);
+  });
+}
 
 export { app, httpServer };

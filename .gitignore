@@ -36,3 +36,6 @@ yarn-error.log*
 # Temporary
 tmp
 temp
+
+.gemini/
+gha-creds-*.json
