@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "postinstall": "cd frontend && npm install && cd ../backend && npm install",
-    "build": "cd backend && npm install && npx tsc && cd ../frontend && npm run build"
+    "install-deps": "npm install && cd frontend && npm install && cd ../backend && npm install",
+    "build": "cd backend && npx tsc --project tsconfig.json && cd ../frontend && npm run build"
   },
   "dependencies": {
     "typescript": "^5.9.3"
