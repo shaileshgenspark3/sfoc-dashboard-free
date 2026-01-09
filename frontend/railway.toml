@@ -1,0 +1,11 @@
+# Railway configuration file
+# This file defines how Railway should build and deploy your frontend service
+
+services:
+  - name: frontend
+    buildCommand: npm install && npm run build
+    startCommand: nginx -g 'daemon off;'
+    ports:
+      - port: 80
+        protocol: http
+        label: http

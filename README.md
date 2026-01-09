@@ -182,6 +182,17 @@ cd backend
 # Deploy to Render/Railway with your .env variables
 ```
 
+### Railway-Specific Instructions
+
+For detailed Railway deployment instructions, see [README.railway.md](README.railway.md).
+
+Railway is recommended as an alternative to Vercel due to the application's backend complexity with WebSocket functionality, cron jobs, and database connections. The project has been configured with:
+
+- Dockerfiles for both frontend and backend
+- Railway configuration files
+- Modified cron job functionality for external triggering
+- Proper environment variable handling
+
 ## 🎯 Event Details
 
 - **Event:** SFOC Shape Fit Open Challenge

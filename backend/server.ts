@@ -14,7 +14,7 @@ import activityRoutes from './src/routes/activities.js';
 import participantRoutes from './src/routes/participants.js';
 import groupRoutes from './src/routes/groups.js';
 import settingsRoutes from './src/routes/settings.js';
-import vercelCronRoutes from './src/routes/vercelCron.js';
+import vercelCronRoutes from './src/routes/cron.js';
 
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -27,8 +27,12 @@ dotenv.config();
 
 // Connect to Database (with automatic fallback to in-memory)
 connectDB().then(() => {
-  // Start Cron Jobs
-  ReminderJob.start();
+  // Start Cron Jobs only if enabled
+  if (process.env.ENABLE_REMINDER_JOB !== 'false') {
+    ReminderJob.start();
+  } else {
+    console.log('⚠️ Reminder job disabled via environment variable');
+  }
 });
 
 const app = express();

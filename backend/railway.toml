@@ -1,0 +1,17 @@
+# Railway configuration file
+# This file defines how Railway should build and deploy your backend service
+
+services:
+  - name: backend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    ports:
+      - port: 8080
+        protocol: http
+        label: http
+    env:
+      - key: PORT
+        value: "8080"
+      - key: NODE_ENV
+        value: "production"
