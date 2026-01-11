@@ -13,6 +13,10 @@ export interface IParticipant extends Document {
   totalPoints: number;
   streakDays: number;
   lastActivityDate?: Date;
+  stravaId?: string;
+  stravaAccessToken?: string;
+  stravaRefreshToken?: string;
+  stravaTokenExpiry?: number;
   createdAt: Date;
 }
 
@@ -33,6 +37,10 @@ const participantSchema = new Schema<IParticipant>({
   totalPoints: { type: Number, default: 0 },
   streakDays: { type: Number, default: 0 },
   lastActivityDate: { type: Date, default: null },
+  stravaId: { type: String, default: null },
+  stravaAccessToken: { type: String, default: null },
+  stravaRefreshToken: { type: String, default: null },
+  stravaTokenExpiry: { type: Number, default: null },
   createdAt: { type: Date, default: Date.now }
 });
 

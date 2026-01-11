@@ -97,6 +97,11 @@ export const groupsApi = {
   join: (groupCode: string, individualCode: string) => api.post(`/groups/${groupCode}/join`, { individualCode }),
 };
 
+export const stravaApi = {
+  getAuthUrl: (code: string) => api.get<{ url: string }>(`/strava/auth/${code}`),
+  sync: (code: string) => api.post<{ success: boolean; syncedCount: number }>(`/strava/sync/${code}`),
+};
+
 export const settingsApi = {
   get: (key: string) => api.get<{ key: string; value: any }>(`/settings/${key}`),
   update: (key: string, value: any) => api.put<{ key: string; value: any }>(`/settings/${key}`, { value }),

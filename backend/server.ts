@@ -16,6 +16,7 @@ import groupRoutes from './src/routes/groups.js';
 import settingsRoutes from './src/routes/settings.js';
 import vercelCronRoutes from './src/routes/cron.js';
 import adminRoutes from './src/routes/admin.js';
+import stravaRoutes from './src/routes/strava.js';
 
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -53,6 +54,7 @@ app.use('/api/groups', groupRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/cron', vercelCronRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/strava', stravaRoutes);
 
 // Static Files - Serve Frontend
 const frontendPath = path.join(__dirname, '../frontend/dist');

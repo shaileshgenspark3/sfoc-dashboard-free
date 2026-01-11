@@ -28,17 +28,29 @@ import {
   Pie,
   Cell
 } from 'recharts';
-import { activitiesApi, participantsApi, Participant, Activity } from '../services/api';
+import { activitiesApi, participantsApi, Participant, Activity, stravaApi } from '../services/api';
 import { format } from 'date-fns';
+import { useSearchParams } from 'react-router-dom';
 
 const CHART_COLORS = ['#FF6B35', '#FF8C5A', '#CC4E14', '#E0E0E0', '#4A4A4A'];
 
 const MyPerformance = () => {
+  const [searchParams] = useSearchParams();
   const [code, setCode] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [participant, setParticipant] = useState<Participant | null>(null);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+
+  useEffect(() => {
+    const stravaStatus = searchParams.get('strava');
+    if (stravaStatus === 'success') {
+      toast.success('STRAVA_UPLINK: CONNECTION_ESTABLISHED');
+    } else if (stravaStatus === 'error') {
+      toast.error('STRAVA_UPLINK: CONNECTION_FAILED');
+    }
+  }, [searchParams]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,6 +70,36 @@ const MyPerformance = () => {
       toast.error('OPERATIVE_NOT_FOUND_IN_REGISTRY');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleStravaConnect = async () => {
+    if (!participant) return;
+    try {
+      const res = await stravaApi.getAuthUrl(participant.individualCode);
+      window.location.href = res.data.url;
+    } catch (err) {
+      toast.error('STRAVA_AUTH_INITIALIZATION_FAILED');
+    }
+  };
+
+  const handleStravaSync = async () => {
+    if (!participant) return;
+    setSyncing(true);
+    try {
+      const res = await stravaApi.sync(participant.individualCode);
+      if (res.data.syncedCount > 0) {
+        toast.success(`SYNC_COMPLETE: ${res.data.syncedCount}_NEW_ACTIVITIES`);
+        // Refresh data
+        const aRes = await activitiesApi.getByParticipant(participant.individualCode);
+        setActivities(aRes.data);
+      } else {
+        toast.success('SYNC_COMPLETE: NO_NEW_DATA');
+      }
+    } catch (err) {
+      toast.error('STRAVA_SYNC_FAILED');
+    } finally {
+      setSyncing(false);
     }
   };
 
@@ -136,11 +178,35 @@ const MyPerformance = () => {
     <div className="space-y-8 py-6 md:py-12">
       {/* Mobile-Friendly Header */}
       <header className="flex flex-col md:flex-row md:items-end justify-between border-b-2 border-[#FF6B35] pb-6 gap-4 px-2">
-        <div className="space-y-1">
-          <div className="tech-label text-[#FF6B35]">OPERATIVE_PROFILE: {participant?.individualCode}</div>
-          <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-white uppercase truncate">
-            {participant?.name}
-          </h1>
+        <div className="flex flex-col md:flex-row md:items-end gap-4 md:gap-8">
+          <div className="space-y-1">
+            <div className="tech-label text-[#FF6B35]">OPERATIVE_PROFILE: {participant?.individualCode}</div>
+            <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-white uppercase truncate">
+              {participant?.name}
+            </h1>
+          </div>
+          
+          <div className="flex gap-2 pb-1">
+            <button 
+              onClick={handleStravaConnect}
+              className="flex items-center gap-2 px-3 py-1.5 bg-[#FC4C02] text-white text-[10px] font-black hover:bg-[#E34402] transition-colors uppercase tracking-widest"
+            >
+              <Zap size={14} fill="currentColor" />
+              CONNECT_STRAVA
+            </button>
+            <button 
+              onClick={handleStravaSync}
+              disabled={syncing}
+              className="flex items-center gap-2 px-3 py-1.5 border border-[#FC4C02] text-[#FC4C02] text-[10px] font-black hover:bg-[#FC4C02] hover:text-white transition-all uppercase tracking-widest disabled:opacity-50"
+            >
+              {syncing ? (
+                <div className="w-3 h-3 border-2 border-current border-t-transparent animate-spin" />
+              ) : (
+                <TrendingUp size={14} />
+              )}
+              SYNC_DATA
+            </button>
+          </div>
         </div>
         <button 
           onClick={logout}
