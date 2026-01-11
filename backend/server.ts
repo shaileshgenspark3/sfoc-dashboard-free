@@ -8,6 +8,7 @@ import { connectDB } from './src/config/database.js';
 import { initWebSocket } from './src/websocket/socketHandler.js';
 import { errorHandler, notFound } from './src/middleware/errorMiddleware.js';
 import ReminderJob from './src/jobs/reminderJob.js';
+import StravaSyncJob from './src/jobs/stravaSyncJob.js';
 
 // Routes
 import activityRoutes from './src/routes/activities.js';
@@ -92,6 +93,7 @@ const startServer = async () => {
     // Start Cron Jobs only if enabled
     if (process.env.ENABLE_REMINDER_JOB !== 'false') {
       ReminderJob.start();
+      StravaSyncJob.start();
     }
 
     console.log('🏁 Starting HTTP server...');

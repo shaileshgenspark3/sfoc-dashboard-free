@@ -95,4 +95,24 @@ export class StravaService {
 
     return synced;
   }
+
+  static async syncAllAthletes() {
+    console.log('🔄 Starting bulk Strava sync for all connected athletes...');
+    const participants = await Participant.find({ 
+      stravaAccessToken: { $ne: null },
+      isActive: true 
+    });
+
+    let totalSynced = 0;
+    for (const p of participants) {
+      try {
+        const synced = await this.syncActivities(p.individualCode);
+        totalSynced += synced?.length || 0;
+      } catch (err) {
+        console.error(`❌ Failed to sync Strava for ${p.individualCode}:`, err);
+      }
+    }
+    console.log(`✅ Bulk Strava sync complete. Total activities synced: ${totalSynced}`);
+    return totalSynced;
+  }
 }
