@@ -1,5 +1,6 @@
 import cron from 'node-cron';
 import { StravaService } from '../services/stravaService.js';
+import ReminderJob from './reminderJob.js';
 
 class StravaSyncJob {
   static start(): void {
@@ -7,6 +8,9 @@ class StravaSyncJob {
     cron.schedule('0 18 * * *', async () => {
       console.log('🕐 Running scheduled Strava sync (18:00)...');
       await StravaService.syncAllAthletes();
+      
+      console.log('🔔 Strava sync complete. Triggering daily reminders...');
+      await ReminderJob.checkAndSendReminders();
     });
 
     // Run every day at 11:59 PM (23:59)

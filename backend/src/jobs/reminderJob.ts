@@ -6,14 +6,13 @@ import EmailService from '../services/emailService.js';
 
 class ReminderJob {
   static start(): void {
-    // Run every day at 6:00 PM IST (18:00)
-    // Adjust timezone as needed
-    cron.schedule('0 18 * * *', async () => {
-      console.log('🕐 Running daily reminder check...');
+    // Run at 10:00 PM (22:00) as a final nudge for the day
+    cron.schedule('0 22 * * *', async () => {
+      console.log('🕐 Running final daily nudge (22:00)...');
       await this.checkAndSendReminders();
     });
 
-    console.log('✅ Reminder cron job started - will run daily at 6:00 PM');
+    console.log('✅ Reminder cron job started - will run daily at 22:00 (18:00 is triggered after Strava sync)');
   }
 
   static async checkAndSendReminders() {
