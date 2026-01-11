@@ -1,6 +1,5 @@
 import express from 'express';
 import { StravaService } from '../services/stravaService.js';
-import toast from 'react-hot-toast';
 
 const router = express.Router();
 
