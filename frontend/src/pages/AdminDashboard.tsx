@@ -12,15 +12,25 @@ import {
   ArrowRight,
   Database,
   Lock,
-  Zap
+  Zap,
+  Activity as ActivityIcon,
+  Trash2,
+  Edit2,
+  X,
+  Save
 } from 'lucide-react';
-import { participantsApi, settingsApi } from '../services/api';
+import { participantsApi, settingsApi, adminApi, Activity } from '../services/api';
+import { format } from 'date-fns';
 
 const AdminDashboard = () => {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [password, setPassword] = useState('');
-  const [activeTab, setActiveTab] = useState<'manual' | 'bulk'>('manual');
+  const [activeTab, setActiveTab] = useState<'manual' | 'bulk' | 'activities'>('manual');
   const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [loadingActivities, setLoadingActivities] = useState(false);
+  const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
+  
   const [manualData, setManualData] = useState({
     name: '',
     email: '',
@@ -37,12 +47,30 @@ const AdminDashboard = () => {
     }
   }, [isAuthorized]);
 
+  useEffect(() => {
+    if (isAuthorized && activeTab === 'activities') {
+      fetchActivities();
+    }
+  }, [isAuthorized, activeTab]);
+
   const fetchSettings = async () => {
     try {
       const res = await settingsApi.get('show_leaderboard');
       setShowLeaderboard(res.data.value);
     } catch (err) {
       console.error('Failed to fetch settings');
+    }
+  };
+
+  const fetchActivities = async () => {
+    setLoadingActivities(true);
+    try {
+      const res = await adminApi.getActivities();
+      setActivities(res.data);
+    } catch (err) {
+      toast.error('Failed to fetch activities');
+    } finally {
+      setLoadingActivities(false);
     }
   };
 
@@ -100,6 +128,34 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleDeleteActivity = async (id: string) => {
+    if (!window.confirm('Are you sure? This will remove points from the user.')) return;
+    try {
+      await adminApi.deleteActivity(id);
+      setActivities(activities.filter(a => a._id !== id));
+      toast.success('ACTIVITY_DELETED');
+    } catch (err) {
+      toast.error('DELETE_FAILED');
+    }
+  };
+
+  const handleUpdateActivity = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingActivity) return;
+    try {
+      const res = await adminApi.updateActivity(editingActivity._id, {
+        distance: Number(editingActivity.distance),
+        duration: Number(editingActivity.duration),
+        activityType: editingActivity.activityType
+      });
+      setActivities(activities.map(a => a._id === editingActivity._id ? res.data.data : a));
+      setEditingActivity(null);
+      toast.success('ACTIVITY_UPDATED');
+    } catch (err) {
+      toast.error('UPDATE_FAILED');
+    }
+  };
+
   if (!isAuthorized) {
     return (
       <div className="min-h-[80vh] flex items-center justify-center px-4">
@@ -148,42 +204,50 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto py-12 space-y-12">
-      <header className="border-b-2 border-[#FF6B35] pb-6 flex justify-between items-end">
+    <div className="max-w-7xl mx-auto py-12 space-y-12">
+      <header className="border-b-2 border-[#FF6B35] pb-6 flex flex-col md:flex-row justify-between md:items-end gap-4">
         <div>
-          <div className="tech-label text-[#FF6B35]">ADMIN_PROTOCOL: PARTICIPANT_MANAGEMENT</div>
-          <h1 className="text-5xl font-black tracking-tighter text-white">CENTRAL_COMMAND</h1>
+          <div className="tech-label text-[#FF6B35]">ADMIN_PROTOCOL: CENTRAL_COMMAND</div>
+          <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-white">SYSTEM_ADMIN</h1>
         </div>
-        <ShieldAlert className="text-[#FF6B35] mb-2" size={40} />
+        <div className="flex items-center gap-4">
+          <a 
+            href={`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/admin/export`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-6 py-3 font-bold tracking-widest text-xs transition-all bg-[#1A1A1A] text-[#2ECC71] border border-[#2ECC71]/50 hover:bg-[#2ECC71] hover:text-black flex items-center gap-2"
+          >
+            EXPORT_DATA
+          </a>
+          <ShieldAlert className="text-[#FF6B35]" size={40} />
+        </div>
       </header>
 
-      <div className="flex gap-4">
+      <div className="flex flex-wrap gap-4">
         <button 
           onClick={() => setActiveTab('manual')}
-          className={`px-8 py-3 font-bold tracking-widest text-xs transition-all ${activeTab === 'manual' ? 'bg-[#FF6B35] text-black' : 'bg-[#1A1A1A] text-gray-500 border border-[#2D2D2D]'}`}
+          className={`px-6 py-3 font-bold tracking-widest text-xs transition-all ${activeTab === 'manual' ? 'bg-[#FF6B35] text-black' : 'bg-[#1A1A1A] text-gray-500 border border-[#2D2D2D]'}`}
         >
           MANUAL_ENTRY
         </button>
         <button 
           onClick={() => setActiveTab('bulk')}
-          className={`px-8 py-3 font-bold tracking-widest text-xs transition-all ${activeTab === 'bulk' ? 'bg-[#FF6B35] text-black' : 'bg-[#1A1A1A] text-gray-500 border border-[#2D2D2D]'}`}
+          className={`px-6 py-3 font-bold tracking-widest text-xs transition-all ${activeTab === 'bulk' ? 'bg-[#FF6B35] text-black' : 'bg-[#1A1A1A] text-gray-500 border border-[#2D2D2D]'}`}
         >
-          BULK_IMPORT_CSV
+          BULK_IMPORT
         </button>
-        <a 
-          href={`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/admin/export`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="px-8 py-3 font-bold tracking-widest text-xs transition-all bg-[#1A1A1A] text-[#2ECC71] border border-[#2ECC71]/50 hover:bg-[#2ECC71] hover:text-black flex items-center gap-2"
+        <button 
+          onClick={() => setActiveTab('activities')}
+          className={`px-6 py-3 font-bold tracking-widest text-xs transition-all ${activeTab === 'activities' ? 'bg-[#FF6B35] text-black' : 'bg-[#1A1A1A] text-gray-500 border border-[#2D2D2D]'}`}
         >
-          EXPORT_ALL_DATA
-        </a>
+          ACTIVITY_LOGS
+        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
         <div className="lg:col-span-8">
           <AnimatePresence mode="wait">
-            {activeTab === 'manual' ? (
+            {activeTab === 'manual' && (
               <motion.form 
                 key="manual"
                 initial={{ opacity: 0, x: -20 }}
@@ -247,7 +311,9 @@ const AdminDashboard = () => {
                   <ArrowRight size={18} />
                 </button>
               </motion.form>
-            ) : (
+            )}
+
+            {activeTab === 'bulk' && (
               <motion.div 
                 key="bulk"
                 initial={{ opacity: 0, x: -20 }}
@@ -306,6 +372,79 @@ const AdminDashboard = () => {
                 )}
               </motion.div>
             )}
+
+            {activeTab === 'activities' && (
+              <motion.div 
+                key="activities"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                className="industrial-panel p-0 overflow-hidden"
+              >
+                <div className="p-6 border-b border-[#2D2D2D] bg-[#1A1A1A]">
+                  <div className="flex items-center gap-3">
+                    <ActivityIcon className="text-[#FF6B35]" size={20} />
+                    <h3 className="text-xl font-bold uppercase tracking-tight">Activity Logs</h3>
+                  </div>
+                </div>
+
+                <div className="max-h-[600px] overflow-y-auto">
+                  {loadingActivities ? (
+                    <div className="p-12 text-center text-gray-500">Retrieving logs...</div>
+                  ) : (
+                    <table className="w-full text-left">
+                      <thead className="bg-[#0D0D0D] sticky top-0 z-10">
+                        <tr className="text-[10px] font-bold text-gray-500 uppercase tracking-widest border-b border-[#2D2D2D]">
+                          <th className="p-4">Date</th>
+                          <th className="p-4">User</th>
+                          <th className="p-4">Type</th>
+                          <th className="p-4">Metrics</th>
+                          <th className="p-4 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#2D2D2D]">
+                        {activities.map((activity) => (
+                          <tr key={activity._id} className="hover:bg-[#1F1F1F] transition-colors">
+                            <td className="p-4 text-xs font-mono text-gray-400">
+                              {format(new Date(activity.createdAt), 'dd/MM HH:mm')}
+                            </td>
+                            <td className="p-4">
+                              <div className="text-sm font-bold text-white">{activity.participantName}</div>
+                              <div className="text-[10px] text-[#FF6B35] font-mono">{activity.participantCode}</div>
+                            </td>
+                            <td className="p-4">
+                              <span className="text-xs font-bold bg-[#262626] px-2 py-1 border border-[#3F3F3F]">
+                                {activity.activityType}
+                              </span>
+                            </td>
+                            <td className="p-4 text-xs font-bold text-gray-300">
+                              {activity.distance > 0 ? `${activity.distance}KM` : `${activity.duration}MIN`}
+                              <span className="text-[#FF6B35] ml-2">({activity.points} PTS)</span>
+                            </td>
+                            <td className="p-4 text-right">
+                              <div className="flex justify-end gap-2">
+                                <button 
+                                  onClick={() => setEditingActivity(activity)}
+                                  className="p-2 hover:text-[#FF6B35] transition-colors"
+                                >
+                                  <Edit2 size={16} />
+                                </button>
+                                <button 
+                                  onClick={() => handleDeleteActivity(activity._id)}
+                                  className="p-2 hover:text-red-500 transition-colors"
+                                >
+                                  <Trash2 size={16} />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              </motion.div>
+            )}
           </AnimatePresence>
         </div>
 
@@ -316,7 +455,6 @@ const AdminDashboard = () => {
               <h3 className="text-xl">DB_OPERATIONS</h3>
             </div>
             <div className="space-y-4">
-              {/* Leaderboard Toggle */}
               <div className="p-4 bg-[#1F1F1F] border border-[#3F3F3F] flex items-center justify-between">
                 <div>
                   <p className="text-xs font-bold text-white uppercase tracking-tighter">Leaderboard Tab</p>
@@ -342,28 +480,73 @@ const AdminDashboard = () => {
                   <span className="text-[10px] font-mono">12%</span>
                 </div>
               </div>
-              <div className="p-4 bg-[#1F1F1F] border border-[#3F3F3F] flex items-center gap-4">
-                <CheckCircle2 size={24} className="text-[#2ECC71]" />
-                <div>
-                  <p className="text-xs font-bold text-white uppercase">Relay Status</p>
-                  <p className="text-[10px] text-gray-500">Comms channels synchronized</p>
-                </div>
-              </div>
             </div>
-          </div>
-
-          <div className="industrial-panel p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <AlertCircle className="text-[#FF6B35]" size={20} />
-              <h3 className="text-xl font-bold uppercase tracking-tight italic">Protocol Warning</h3>
-            </div>
-            <p className="text-[10px] text-gray-400 leading-relaxed font-bold tracking-wider">
-              AUTHORIZED ACCESS ONLY. ALL TRANSACTIONS ARE LOGGED AT THE TRUST CENTRAL SERVER. 
-              ENSURE CSV HEADERS MATCH THE PROTOCOL SPECIFICATIONS EXACTLY TO AVOID DATA CORRUPTION.
-            </p>
           </div>
         </div>
       </div>
+
+      {/* Edit Modal */}
+      <AnimatePresence>
+        {editingActivity && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="industrial-panel p-8 w-full max-w-lg border-2 border-[#FF6B35]"
+            >
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-2xl font-black uppercase tracking-tighter text-white">EDIT_RECORD</h3>
+                <button onClick={() => setEditingActivity(null)} className="text-gray-500 hover:text-white">
+                  <X size={24} />
+                </button>
+              </div>
+
+              <form onSubmit={handleUpdateActivity} className="space-y-6">
+                <div className="space-y-2">
+                  <label className="tech-label text-white">Activity Type</label>
+                  <select 
+                    className="w-full bg-[#050505] border border-[#3F3F3F] p-3 text-white"
+                    value={editingActivity.activityType}
+                    onChange={e => setEditingActivity({...editingActivity, activityType: e.target.value})}
+                  >
+                    {['Walking', 'Running', 'Cycling', 'Yoga', 'Gym'].map(t => (
+                      <option key={t} value={t}>{t}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="tech-label text-white">Distance (KM)</label>
+                    <input 
+                      type="number"
+                      step="0.1"
+                      className="w-full bg-[#050505] border border-[#3F3F3F] p-3 text-white"
+                      value={editingActivity.distance}
+                      onChange={e => setEditingActivity({...editingActivity, distance: Number(e.target.value)})}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="tech-label text-white">Duration (MIN)</label>
+                    <input 
+                      type="number"
+                      className="w-full bg-[#050505] border border-[#3F3F3F] p-3 text-white"
+                      value={editingActivity.duration}
+                      onChange={e => setEditingActivity({...editingActivity, duration: Number(e.target.value)})}
+                    />
+                  </div>
+                </div>
+
+                <button type="submit" className="btn-safety w-full py-4 flex items-center justify-center gap-3">
+                  <Save size={20} />
+                  SAVE_CHANGES
+                </button>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

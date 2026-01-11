@@ -101,4 +101,10 @@ export const settingsApi = {
   update: (key: string, value: any) => api.put<{ key: string; value: any }>(`/settings/${key}`, { value }),
 };
 
+export const adminApi = {
+  getActivities: () => api.get<Activity[]>('/admin/activities'),
+  updateActivity: (id: string, data: Partial<Activity>) => api.put(`/admin/activities/${id}`, data),
+  deleteActivity: (id: string) => api.delete(`/admin/activities/${id}`),
+};
+
 export default api;

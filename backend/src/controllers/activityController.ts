@@ -67,3 +67,30 @@ export const exportAllData = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to export data' });
   }
 };
+
+export const getAllActivities = async (req: Request, res: Response) => {
+  try {
+    const activities = await ActivityService.getAllActivities();
+    res.json(activities);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch all activities' });
+  }
+};
+
+export const deleteActivity = async (req: Request, res: Response) => {
+  try {
+    await ActivityService.deleteActivity(req.params.id);
+    res.json({ success: true, message: 'Activity deleted' });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || 'Failed to delete activity' });
+  }
+};
+
+export const updateActivity = async (req: Request, res: Response) => {
+  try {
+    const updated = await ActivityService.updateActivity(req.params.id, req.body);
+    res.json({ success: true, data: updated });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || 'Failed to update activity' });
+  }
+};

@@ -193,4 +193,69 @@ export class ActivityService {
 
     return csv;
   }
+
+  static async getAllActivities() {
+    return Activity.find().sort({ createdAt: -1 });
+  }
+
+  static async deleteActivity(id: string) {
+    const activity = await Activity.findById(id);
+    if (!activity) throw new Error('Activity not found');
+
+    const participant = await Participant.findOne({ individualCode: activity.participantCode });
+    
+    if (participant) {
+      participant.totalDistance -= activity.distance;
+      participant.totalDuration -= activity.duration;
+      participant.totalPoints -= activity.points;
+      
+      // Note: Re-calculating streak is complex when deleting past activities. 
+      // For simplicity, we just deduct the totals. 
+      // If deleting the ONLY activity of today, we might want to check previous dates, 
+      // but that requires more logic. We will accept this trade-off for now.
+      
+      await participant.save();
+    }
+
+    await Activity.findByIdAndDelete(id);
+    return { success: true };
+  }
+
+  static async updateActivity(id: string, updates: Partial<IActivity>) {
+    // 1. Get Old Activity
+    const oldActivity = await Activity.findById(id);
+    if (!oldActivity) throw new Error('Activity not found');
+
+    // 2. Calculate diffs
+    const distanceDiff = (updates.distance || 0) - oldActivity.distance;
+    const durationDiff = (updates.duration || 0) - oldActivity.duration;
+    
+    // 3. Recalculate points if needed
+    let newPoints = oldActivity.points;
+    if (updates.distance !== undefined || updates.duration !== undefined || updates.activityType) {
+      newPoints = calculatePoints(
+        updates.activityType || oldActivity.activityType,
+        updates.distance !== undefined ? updates.distance : oldActivity.distance,
+        updates.duration !== undefined ? updates.duration : oldActivity.duration
+      );
+    }
+    const pointsDiff = newPoints - oldActivity.points;
+
+    // 4. Update Participant
+    const participant = await Participant.findOne({ individualCode: oldActivity.participantCode });
+    if (participant) {
+      participant.totalDistance += distanceDiff;
+      participant.totalDuration += durationDiff;
+      participant.totalPoints += pointsDiff;
+      await participant.save();
+    }
+
+    // 5. Update Activity
+    const updatedActivity = await Activity.findByIdAndUpdate(id, {
+      ...updates,
+      points: newPoints
+    }, { new: true });
+
+    return updatedActivity;
+  }
 }
