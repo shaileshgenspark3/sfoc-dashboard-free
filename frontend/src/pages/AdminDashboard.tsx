@@ -66,6 +66,7 @@ const AdminDashboard = () => {
     setLoadingActivities(true);
     try {
       const res = await adminApi.getActivities();
+      console.log('Admin Activities:', res.data); // Debug
       setActivities(res.data);
     } catch (err) {
       toast.error('Failed to fetch activities');
