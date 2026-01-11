@@ -112,9 +112,9 @@ const Dashboard = () => {
               </div>
             </div>
 
-            <h1 className="text-4xl sm:text-5xl md:text-8xl font-black tracking-tighter leading-[0.9] text-white break-words">
-              FIT-O-CHARITY <br />
-              <span className="text-[#FF6B35]">BY_SUKRUT_PARIVAAR</span>
+            <h1 className="text-3xl sm:text-5xl md:text-8xl font-black tracking-tighter leading-none text-white flex items-baseline flex-wrap gap-x-3 md:gap-x-6">
+              <span>FIT-O-CHARITY</span>
+              <span className="text-[#FF6B35] text-base sm:text-2xl md:text-4xl uppercase tracking-widest">BY_SUKRUT_PARIVAAR</span>
             </h1>
 
             <p className="text-base md:text-lg text-[#8C8C8C] max-w-xl font-medium leading-relaxed">
