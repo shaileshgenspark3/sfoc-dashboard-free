@@ -202,3 +202,4 @@ Railway is recommended as an alternative to Vercel due to the application's back
 ---
 
 Built with ❤️ for fitness enthusiasts!
+<!-- Trigger build -->
