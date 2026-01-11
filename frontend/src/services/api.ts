@@ -92,6 +92,7 @@ export interface Group {
 export const groupsApi = {
   getGroup: (code: string) => api.get<Group>(`/groups/${code}`),
   getGroupLeaderboard: (code: string) => api.get<any>(`/groups/${code}/leaderboard`),
+  getGroupActivities: (code: string) => api.get<Activity[]>(`/groups/${code}/activities`),
   create: (data: { groupName: string; description?: string; individualCode: string }) => api.post('/groups/create', data),
   join: (groupCode: string, individualCode: string) => api.post(`/groups/${groupCode}/join`, { individualCode }),
 };

@@ -28,6 +28,7 @@ const Navbar = () => {
     { path: '/', icon: LayoutGrid, label: 'DASHBOARD' },
     { path: '/submit', icon: Plus, label: 'SUBMIT ACTIVITY', highlight: true },
     { path: '/my-performance', icon: User, label: 'MY PERFORMANCE' },
+    { path: '/group-performance', icon: Users, label: 'GROUP PERFORMANCE' },
     ...(showLeaderboard ? [{ path: '/leaderboard', icon: Trophy, label: 'LEADERBOARD' }] : []),
     { path: '/admin', icon: ShieldAlert, label: 'ADMIN' },
   ];

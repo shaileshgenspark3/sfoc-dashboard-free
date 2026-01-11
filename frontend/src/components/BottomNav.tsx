@@ -25,6 +25,7 @@ const BottomNav = () => {
   const navItems = [
     { path: '/', icon: LayoutGrid, label: 'HOME' },
     { path: '/my-performance', icon: User, label: 'ME' },
+    { path: '/group-performance', icon: Users, label: 'GROUP' },
     { path: '/submit', icon: Plus, label: 'SUBMIT', highlight: true },
     ...(showLeaderboard ? [{ path: '/leaderboard', icon: Trophy, label: 'RANKS' }] : []),
     { path: '/admin', icon: ShieldAlert, label: 'ADMIN' },

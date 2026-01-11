@@ -42,5 +42,21 @@ export const getGroupLeaderboard = async (req: Request, res: Response) => {
   }
 };
 
-export const getGroupByCode = async (req: Request, res: Response) => {};
-export const getAllGroups = async (req: Request, res: Response) => {};
+export const getGroupActivities = async (req: Request, res: Response) => {
+  try {
+    const data = await GroupService.getGroupActivities(req.params.code);
+    res.json(data);
+  } catch (error: any) {
+    res.status(404).json({ error: error.message });
+  }
+};
+
+export const getGroupByCode = async (req: Request, res: Response) => {
+  // Placeholder or logic to get just group details if needed
+  res.status(501).json({ message: 'Not Implemented' });
+};
+
+export const getAllGroups = async (req: Request, res: Response) => {
+  // Placeholder
+  res.status(501).json({ message: 'Not Implemented' });
+};

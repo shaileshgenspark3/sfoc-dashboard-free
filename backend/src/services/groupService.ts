@@ -1,5 +1,6 @@
 import Group, { IGroup } from '../models/Group.js';
 import Participant from '../models/Participant.js';
+import Activity from '../models/Activity.js';
 import { generateCode } from '../utils/codeGenerator.js';
 
 export class GroupService {
@@ -65,23 +66,29 @@ export class GroupService {
   }
 
   static async getLeaderboard(groupCode: string) {
-    const group = await Group.findOne({ groupCode: groupCode.toUpperCase() });
-    if (!group) throw new Error('Group not found.');
-
-    const memberCodes = group.members.map(m => m.individualCode);
-
-    const leaderboard = await Participant.find({
-      individualCode: { $in: memberCodes }
-    })
+    const participants = await Participant.find({ groupCode: groupCode.toUpperCase() })
       .sort({ totalPoints: -1 })
       .select('name individualCode totalDistance totalDuration totalPoints streakDays');
 
+    // Calculate aggregated stats on the fly
+    const totalDistance = participants.reduce((acc, curr) => acc + curr.totalDistance, 0);
+    const totalDuration = participants.reduce((acc, curr) => acc + curr.totalDuration, 0);
+    const totalPoints = participants.reduce((acc, curr) => acc + curr.totalPoints, 0);
+
     return {
-      groupName: group.groupName,
-      totalMembers: group.members.length,
-      totalDistance: group.totalDistance,
-      totalDuration: group.totalDuration,
-      leaderboard
+      groupCode,
+      totalMembers: participants.length,
+      totalDistance: Math.round(totalDistance * 10) / 10,
+      totalDuration: Math.round(totalDuration),
+      totalPoints: Math.round(totalPoints),
+      leaderboard: participants
     };
+  }
+
+  // New method to fetch activities for the entire group
+  static async getGroupActivities(groupCode: string) {
+    return Activity.find({ groupCode: groupCode.toUpperCase() })
+      .sort({ createdAt: -1 })
+      .limit(50); // Limit to last 50 for performance
   }
 }

@@ -6,6 +6,7 @@ import GroupDashboard from './pages/GroupDashboard';
 import Leaderboard from './pages/Leaderboard';
 import AdminDashboard from './pages/AdminDashboard';
 import MyPerformance from './pages/MyPerformance';
+import GroupPerformance from './pages/GroupPerformance';
 import Navbar from './components/Navbar';
 import BottomNav from './components/BottomNav';
 
@@ -36,6 +37,7 @@ function App() {
             <Route path="/" element={<Dashboard />} />
             <Route path="/submit" element={<SubmitActivity />} />
             <Route path="/leaderboard" element={<Leaderboard />} />
+            <Route path="/group-performance" element={<GroupPerformance />} />
             <Route path="/group/:groupCode" element={<GroupDashboard />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/my-performance" element={<MyPerformance />} />
