@@ -11,7 +11,8 @@ import {
   Clock, 
   MapPin, 
   ArrowLeft,
-  LayoutGrid
+  LayoutGrid,
+  Zap
 } from 'lucide-react';
 import { 
   ResponsiveContainer, 
