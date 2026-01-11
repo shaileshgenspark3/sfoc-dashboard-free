@@ -13,11 +13,18 @@ router.get('/callback', async (req, res) => {
   try {
     await StravaService.handleCallback(code as string, state as string);
     // Redirect back to frontend
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    let frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    if (frontendUrl.endsWith('/')) {
+      frontendUrl = frontendUrl.slice(0, -1);
+    }
     res.redirect(`${frontendUrl}/my-performance?strava=success`);
   } catch (error) {
     console.error('Strava callback error:', error);
-    res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/my-performance?strava=error`);
+    let frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    if (frontendUrl.endsWith('/')) {
+      frontendUrl = frontendUrl.slice(0, -1);
+    }
+    res.redirect(`${frontendUrl}/my-performance?strava=error`);
   }
 });
 
