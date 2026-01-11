@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Trophy, LayoutGrid, Plus, User, ShieldAlert } from 'lucide-react';
+import { Trophy, LayoutGrid, Plus, User, ShieldAlert, Users } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { settingsApi } from '../services/api';
 
