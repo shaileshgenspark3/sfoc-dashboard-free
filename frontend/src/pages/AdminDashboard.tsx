@@ -35,6 +35,7 @@ const AdminDashboard = () => {
     name: '',
     email: '',
     mobile: '',
+    code: '',
     activityType: 'Walking'
   });
   const [file, setFile] = useState<File | null>(null);
@@ -102,7 +103,7 @@ const AdminDashboard = () => {
     try {
       const res = await participantsApi.register(manualData);
       toast.success(`User Registered! Code: ${res.data.participant.individualCode}`);
-      setManualData({ name: '', email: '', mobile: '', activityType: 'Walking' });
+      setManualData({ name: '', email: '', mobile: '', code: '', activityType: 'Walking' });
     } catch (err: any) {
       toast.error(err.message || 'Registration failed');
     }
@@ -264,6 +265,17 @@ const AdminDashboard = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
+                    <label className="tech-label text-white">Participant Code (Required)</label>
+                    <input 
+                      type="text" 
+                      required
+                      placeholder="e.g. 1999"
+                      className="w-full bg-[#050505] border-2 border-[#2D2D2D] p-4 text-white focus:border-[#FF6B35] outline-none uppercase"
+                      value={manualData.code}
+                      onChange={e => setManualData({...manualData, code: e.target.value.toUpperCase()})}
+                    />
+                  </div>
+                  <div className="space-y-2">
                     <label className="tech-label text-white">Full Name</label>
                     <input 
                       type="text" 
@@ -340,7 +352,7 @@ const AdminDashboard = () => {
                     <p className="text-lg font-bold text-white uppercase tracking-widest">
                       {file ? file.name : 'Drop CSV File or Click to Browse'}
                     </p>
-                    <p className="text-[10px] text-gray-500 mt-2">REQUIRED_HEADERS: name, email, mobile, activityType</p>
+                    <p className="text-[10px] text-gray-500 mt-2">REQUIRED_HEADERS: code, name, email, mobile, activityType</p>
                   </label>
                 </div>
 

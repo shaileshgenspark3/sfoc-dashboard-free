@@ -55,24 +55,77 @@ export const connectDB = async () => {
 };
 
 const seedDatabase = async () => {
-  const testCode = 'TEST01';
-  try {
-    const exists = await Participant.findOne({ individualCode: testCode });
-    if (!exists) {
-      await Participant.create({
-        name: 'Demo Athlete',
-        email: 'demo@sukrutparivar.com',
-        mobile: '+1234567890',
-        individualCode: testCode,
-        activityType: 'Running', 
-        isActive: true,
-        streakDays: 0,
-        totalDistance: 0,
-        totalDuration: 0
-      });
-      console.log(`🌱 Database Seeded! Use Code: ${testCode}`);
+
+  const seeds = [
+
+    {
+
+      code: 'TEST01',
+
+      name: 'Demo Athlete',
+
+      group: null
+
+    },
+
+    {
+
+      code: '1999',
+
+      name: 'Group 1000 Captain',
+
+      group: '1000'
+
     }
-  } catch (error) {
-    console.error('Seed Error:', error);
+
+  ];
+
+
+
+  for (const seed of seeds) {
+
+    try {
+
+      const exists = await Participant.findOne({ individualCode: seed.code });
+
+      if (!exists) {
+
+        await Participant.create({
+
+          name: seed.name,
+
+          email: `${seed.code.toLowerCase()}@sukrutparivar.com`,
+
+          mobile: '+1234567890',
+
+          individualCode: seed.code,
+
+          activityType: 'Running', 
+
+          groupCode: seed.group,
+
+          isActive: true,
+
+          streakDays: 0,
+
+          totalDistance: 0,
+
+          totalDuration: 0,
+
+          totalPoints: 0
+
+        });
+
+        console.log(`🌱 Database Seeded! Use Code: ${seed.code}`);
+
+      }
+
+    } catch (error) {
+
+      console.error(`Seed Error (${seed.code}):`, error);
+
+    }
+
   }
+
 };
