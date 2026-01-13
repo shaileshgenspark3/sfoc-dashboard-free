@@ -89,7 +89,7 @@ const AdminDashboard = () => {
 
   const handleAuth = (e: React.FormEvent) => {
     e.preventDefault();
-    if (password === '9993') {
+    if (password === '9933') {
       setIsAuthorized(true);
       toast.success('ACCESS_GRANTED: ADMIN_PRIVILEGES_ACTIVE');
     } else {
