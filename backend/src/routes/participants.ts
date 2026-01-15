@@ -15,6 +15,7 @@ import {
 
 const storage = multer.diskStorage({
   destination: (req: Request, file: any, cb: any) => {
+    console.log('📂 Multer Destination:', file.originalname);
     const uploadPath = 'uploads/profiles/';
     // Ensure directory exists
     if (!fs.existsSync(uploadPath)) {
@@ -32,9 +33,11 @@ const uploadProfile = multer({
   storage: storage,
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
   fileFilter: (req: Request, file: any, cb: any) => {
+    console.log('🔍 Multer File Filter:', file.mimetype, file.originalname);
     if (file.mimetype.startsWith('image/')) {
       cb(null, true);
     } else {
+      console.log('❌ Invalid File Type:', file.mimetype);
       cb(new Error('Only images are allowed'));
     }
   }

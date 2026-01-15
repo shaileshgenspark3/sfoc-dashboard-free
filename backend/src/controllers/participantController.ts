@@ -74,6 +74,8 @@ export const getLeaderboard = async (req: Request, res: Response) => {
 
 export const uploadProfilePicture = async (req: Request, res: Response) => {
   console.log('📸 Upload request received for:', req.params.code);
+  console.log('📨 Content-Type:', req.headers['content-type']);
+  
   const file = (req as any).file;
   
   if (!file) {
