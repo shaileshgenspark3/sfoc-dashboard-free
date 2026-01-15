@@ -18,7 +18,7 @@ export const SocialShareCard = forwardRef<HTMLDivElement, Props>(({ participant,
   const todayPoints = todayActivities.reduce((acc, curr) => acc + (curr.points || 0), 0);
 
   // Get top 3 badges (prioritize new ones or rarest)
-  const displayBadges = participant.badges.slice(-3).reverse();
+  const displayBadges = (participant.badges || []).slice(-3).reverse();
 
   return (
     <div 

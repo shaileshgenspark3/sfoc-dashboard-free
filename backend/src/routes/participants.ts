@@ -1,5 +1,5 @@
-import express from 'express';
-import multer from 'multer';
+import express, { Request } from 'express';
+import multer, { FileFilterCallback } from 'multer';
 import path from 'path';
 import { 
   registerParticipant, 
@@ -13,10 +13,10 @@ import {
 } from '../controllers/participantController.js';
 
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
+  destination: (req: Request, file: any, cb: any) => {
     cb(null, 'uploads/profiles/');
   },
-  filename: (req, file, cb) => {
+  filename: (req: Request, file: any, cb: any) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
     cb(null, uniqueSuffix + path.extname(file.originalname));
   }
@@ -25,7 +25,7 @@ const storage = multer.diskStorage({
 const uploadProfile = multer({ 
   storage: storage,
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
-  fileFilter: (req, file, cb) => {
+  fileFilter: (req: Request, file: any, cb: any) => {
     if (file.mimetype.startsWith('image/')) {
       cb(null, true);
     } else {

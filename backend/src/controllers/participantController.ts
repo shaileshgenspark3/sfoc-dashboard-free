@@ -3,10 +3,6 @@ import { ParticipantService } from '../services/participantService.js';
 import csv from 'csv-parser';
 import fs from 'fs';
 
-interface MulterRequest extends Request {
-  file?: Express.Multer.File;
-}
-
 export const registerParticipant = async (req: Request, res: Response) => {
   try {
     const participant = await ParticipantService.register(req.body);
@@ -26,19 +22,19 @@ export const registerParticipant = async (req: Request, res: Response) => {
 };
 
 export const bulkImportParticipants = async (req: Request, res: Response) => {
-  const multerReq = req as MulterRequest;
-  if (!multerReq.file) {
+  const file = (req as any).file;
+  if (!file) {
     return res.status(400).json({ error: 'No file uploaded' });
   }
 
   const results: any[] = [];
-  fs.createReadStream(multerReq.file.path)
+  fs.createReadStream(file.path)
     .pipe(csv())
     .on('data', (data) => results.push(data))
     .on('end', async () => {
       try {
         const importResults = await ParticipantService.bulkImport(results);
-        fs.unlinkSync(multerReq.file!.path); // Clean up temp file
+        fs.unlinkSync(file.path); // Clean up temp file
         res.json({
           message: 'Bulk import completed',
           ...importResults
@@ -77,13 +73,13 @@ export const getLeaderboard = async (req: Request, res: Response) => {
 };
 
 export const uploadProfilePicture = async (req: Request, res: Response) => {
-  const multerReq = req as MulterRequest;
-  if (!multerReq.file) {
+  const file = (req as any).file;
+  if (!file) {
     return res.status(400).json({ error: 'No image file uploaded' });
   }
 
   try {
-    const profilePictureUrl = `/uploads/profiles/${multerReq.file.filename}`;
+    const profilePictureUrl = `/uploads/profiles/${file.filename}`;
     const participant = await ParticipantService.updateProfilePicture(req.params.code, profilePictureUrl);
     res.json({ success: true, profilePicture: participant.profilePicture });
   } catch (error: any) {
