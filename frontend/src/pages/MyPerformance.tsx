@@ -104,8 +104,10 @@ const MyPerformance = () => {
         setParticipant(prev => prev ? { ...prev, profilePicture: res.data.profilePicture } : null);
         toast.success('PROFILE_IMAGE_UPDATED');
       }
-    } catch (err) {
-      toast.error('UPLOAD_FAILED: TRANSMISSION_ERROR');
+    } catch (err: any) {
+      console.error('Upload Error:', err);
+      const errorMsg = err.response?.data?.error || err.message || 'TRANSMISSION_ERROR';
+      toast.error(`UPLOAD_FAILED: ${errorMsg}`);
     } finally {
       setUploadingProfile(false);
     }

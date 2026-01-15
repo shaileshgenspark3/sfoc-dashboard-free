@@ -1,6 +1,7 @@
 import express, { Request } from 'express';
 import multer, { FileFilterCallback } from 'multer';
 import path from 'path';
+import fs from 'fs';
 import { 
   registerParticipant, 
   getParticipantByCode, 
@@ -14,7 +15,12 @@ import {
 
 const storage = multer.diskStorage({
   destination: (req: Request, file: any, cb: any) => {
-    cb(null, 'uploads/profiles/');
+    const uploadPath = 'uploads/profiles/';
+    // Ensure directory exists
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true });
+    }
+    cb(null, uploadPath);
   },
   filename: (req: Request, file: any, cb: any) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
