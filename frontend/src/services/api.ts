@@ -91,9 +91,7 @@ export const participantsApi = {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),
   getByCode: (code: string) => api.get<Participant>(`/participants/code/${code}`),
-  uploadProfilePicture: (code: string, formData: FormData) => api.post<{ success: boolean; profilePicture: string }>(`/participants/${code}/upload-profile`, formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }
-  }),
+  uploadProfilePicture: (code: string, formData: FormData) => api.post<{ success: boolean; profilePicture: string }>(`/participants/${code}/upload-profile`, formData),
 };
 
 export interface Group {
