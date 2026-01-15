@@ -38,6 +38,7 @@ import { useSearchParams } from 'react-router-dom';
 import { BadgesList } from '../components/BadgesList';
 import { AchievementPopup } from '../components/AchievementPopup';
 import { SocialShareCard } from '../components/SocialShareCard';
+import { getAssetUrl } from '../utils/urlHelper';
 
 const CHART_COLORS = ['#FF6B35', '#FF8C5A', '#CC4E14', '#E0E0E0', '#4A4A4A'];
 
@@ -266,7 +267,7 @@ const MyPerformance = () => {
             <div className="w-24 h-24 md:w-32 md:h-32 rounded-xl overflow-hidden border-2 border-[#FF6B35] bg-black relative">
               {participant?.profilePicture ? (
                 <img 
-                  src={participant.profilePicture.startsWith('http') ? participant.profilePicture : `${import.meta.env.VITE_API_URL || ''}${participant.profilePicture}`} 
+                  src={getAssetUrl(participant.profilePicture)}
                   alt="Profile" 
                   className="w-full h-full object-cover"
                 />

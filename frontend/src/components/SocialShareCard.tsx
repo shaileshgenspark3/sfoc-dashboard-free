@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 import { IconMap } from '../utils/iconMap';
 import { Zap, Flame, TrendingUp, Clock, User, ExternalLink } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
+import { getAssetUrl } from '../utils/urlHelper';
 
 interface Props {
   participant: Participant;
@@ -54,9 +55,10 @@ export const SocialShareCard = forwardRef<HTMLDivElement, Props>(({ participant,
           <div className="w-[400px] h-[400px] rounded-full overflow-hidden border-[8px] border-[#1A1A1A] shadow-2xl relative z-10 bg-[#1A1A1A]">
             {participant.profilePicture ? (
               <img 
-                src={participant.profilePicture.startsWith('http') ? participant.profilePicture : `${import.meta.env.VITE_API_URL}${participant.profilePicture}`} 
+                src={getAssetUrl(participant.profilePicture)}
                 className="w-full h-full object-cover"
                 alt="Profile"
+                crossOrigin="anonymous"
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-gray-900">
