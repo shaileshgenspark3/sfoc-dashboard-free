@@ -1,8 +1,9 @@
 import React, { forwardRef } from 'react';
-import { Participant, Activity, Badge } from '../services/api';
+import { Participant, Activity } from '../services/api';
 import { format } from 'date-fns';
 import { IconMap } from '../utils/iconMap';
-import { Zap, Flame, TrendingUp, Clock, MapPin, User } from 'lucide-react';
+import { Zap, Flame, TrendingUp, Clock, User, ExternalLink } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 
 interface Props {
   participant: Participant;
@@ -10,66 +11,51 @@ interface Props {
 }
 
 export const SocialShareCard = forwardRef<HTMLDivElement, Props>(({ participant, todayActivities }, ref) => {
-  const todayDate = format(new Date(), 'dd MMM yyyy');
+  const todayDate = format(new Date(), 'dd MMMM yyyy');
   
   // Calculate today's stats
   const todayDistance = todayActivities.reduce((acc, curr) => acc + (curr.distance || 0), 0);
   const todayDuration = todayActivities.reduce((acc, curr) => acc + (curr.duration || 0), 0);
   const todayPoints = todayActivities.reduce((acc, curr) => acc + (curr.points || 0), 0);
 
-  // Get top 3 badges (prioritize new ones or rarest)
+  // Get top 3 badges
   const displayBadges = (participant.badges || []).slice(-3).reverse();
 
   return (
     <div 
       ref={ref}
-      className="w-[1080px] h-[1920px] bg-black relative overflow-hidden flex flex-col items-center pt-32 pb-20 px-16 text-white font-sans"
-      style={{ 
-        backgroundImage: 'radial-gradient(circle at 50% 0%, #1a1a1a 0%, #000000 100%)'
-      }}
+      className="w-[1080px] h-[1920px] bg-[#050505] relative overflow-hidden flex flex-col font-sans text-white"
     >
-      {/* Dynamic Background Elements */}
-      <div className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none">
-        <div className="absolute top-[10%] left-[-10%] w-[800px] h-[800px] bg-[#FF6B35] rounded-full blur-[150px] mix-blend-screen" />
-        <div className="absolute bottom-[10%] right-[-10%] w-[600px] h-[600px] bg-neon-green rounded-full blur-[150px] mix-blend-screen" />
-      </div>
-      
-      {/* Grid Overlay */}
-      <div className="absolute inset-0 opacity-10" 
-        style={{ 
-          backgroundImage: 'linear-gradient(#333 1px, transparent 1px), linear-gradient(90deg, #333 1px, transparent 1px)',
-          backgroundSize: '40px 40px'
-        }} 
-      />
+      {/* Background Ambience */}
+      <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100" />
+      <div className="absolute top-0 left-0 w-full h-[800px] bg-gradient-to-b from-[#FF6B35]/20 to-transparent" />
+      <div className="absolute bottom-0 w-full h-[600px] bg-gradient-to-t from-neon-green/10 to-transparent" />
 
-      {/* Header */}
-      <div className="relative z-10 text-center space-y-4 mb-12 w-full">
-        <div className="flex flex-col items-center">
-          <h3 className="text-xl font-bold tracking-[0.3em] text-[#FF6B35] uppercase mb-2">SUKRUT PARIVAR PRESENTS</h3>
-          <h1 className="text-6xl font-black italic tracking-tighter text-white transform -skew-x-12 uppercase drop-shadow-[0_0_15px_rgba(255,107,53,0.8)]">
-            FIT-O-CHARITY
-          </h1>
-          <div className="w-full max-w-md h-1 bg-gradient-to-r from-transparent via-neon-green to-transparent mt-4" />
+      {/* Header Section */}
+      <div className="pt-24 px-16 text-center relative z-10">
+        <div className="inline-flex items-center gap-4 mb-6">
+          <div className="h-[2px] w-12 bg-[#FF6B35]" />
+          <span className="text-2xl font-bold tracking-[0.4em] text-[#FF6B35] uppercase">Sukrut Parivar</span>
+          <div className="h-[2px] w-12 bg-[#FF6B35]" />
         </div>
-        <div className="text-3xl font-bold tracking-widest text-gray-400 uppercase font-mono mt-4">
-          {todayDate}
-        </div>
+        <h1 className="text-8xl font-black tracking-tighter text-white uppercase italic drop-shadow-2xl">
+          FIT-O-CHARITY
+        </h1>
+        <p className="text-3xl text-gray-400 font-bold mt-4 tracking-widest uppercase">{todayDate}</p>
       </div>
 
-      {/* Main Stats Circle */}
-      <div className="relative z-10 mb-12 scale-110">
-        <div className="relative w-[500px] h-[500px]">
-          {/* Glitch Rings */}
-          <div className="absolute inset-0 border-[2px] border-[#FF6B35]/20 rounded-full animate-[spin_8s_linear_infinite]" />
-          <div className="absolute inset-[-20px] border-[1px] border-neon-green/20 rounded-full animate-[spin_12s_linear_infinite_reverse] border-dashed" />
-          <div className="absolute inset-[20px] border-[4px] border-white/5 rounded-full" />
+      {/* Profile Section */}
+      <div className="mt-20 flex flex-col items-center relative z-10">
+        <div className="relative">
+          {/* Glowing Rings */}
+          <div className="absolute inset-[-20px] border-2 border-[#FF6B35] rounded-full animate-[spin_20s_linear_infinite] opacity-50 border-dashed" />
+          <div className="absolute inset-[-40px] border-2 border-neon-green rounded-full animate-[spin_15s_linear_infinite_reverse] opacity-30" />
           
-          {/* Profile Picture */}
-          <div className="absolute inset-4 rounded-full overflow-hidden border-[6px] border-[#1A1A1A] shadow-[0_0_80px_rgba(255,107,53,0.3)] bg-[#1A1A1A] relative group">
+          <div className="w-[400px] h-[400px] rounded-full overflow-hidden border-[8px] border-[#1A1A1A] shadow-2xl relative z-10 bg-[#1A1A1A]">
             {participant.profilePicture ? (
               <img 
                 src={participant.profilePicture.startsWith('http') ? participant.profilePicture : `${import.meta.env.VITE_API_URL}${participant.profilePicture}`} 
-                className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity"
+                className="w-full h-full object-cover"
                 alt="Profile"
               />
             ) : (
@@ -77,74 +63,77 @@ export const SocialShareCard = forwardRef<HTMLDivElement, Props>(({ participant,
                 <User size={150} className="text-gray-700" />
               </div>
             )}
-            {/* Scanline Overlay */}
-            <div className="absolute inset-0 bg-[url('https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMzQx/giphy.gif')] opacity-5 mix-blend-overlay pointer-events-none" />
           </div>
-
-          {/* Today's Score Badge */}
-          <div className="absolute -bottom-12 left-1/2 -translate-x-1/2 bg-black/90 border-2 border-neon-green px-10 py-6 rounded-xl shadow-[0_0_30px_rgba(57,255,20,0.3)] flex items-center gap-6 min-w-[340px] justify-center backdrop-blur-md transform hover:scale-105 transition-transform">
-            <div className="p-3 bg-neon-green/10 rounded-lg border border-neon-green/30">
-              <Zap size={48} className="text-neon-green fill-neon-green" />
-            </div>
-            <div className="text-left">
-              <div className="text-6xl font-black text-white leading-none tracking-tighter">{Math.round(todayPoints)}</div>
-              <div className="text-xs font-bold text-neon-green tracking-[0.3em] uppercase mt-1">Daily Impact</div>
-            </div>
+          
+          {/* Rank Badge */}
+          <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-[#FF6B35] text-black px-8 py-2 rounded-full font-black text-2xl uppercase tracking-wider shadow-lg z-20 whitespace-nowrap">
+            Elite Operative
           </div>
         </div>
-      </div>
 
-      {/* Participant Name */}
-      <div className="relative z-10 text-center mb-16 space-y-2">
-        <h2 className="text-7xl font-black uppercase tracking-tighter text-white drop-shadow-2xl">
+        <h2 className="text-7xl font-black mt-16 text-center uppercase tracking-tighter max-w-4xl leading-tight">
           {participant.name}
         </h2>
-        <div className="inline-flex items-center gap-3 px-6 py-2 bg-[#1A1A1A] border border-gray-700 rounded-full">
-          <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-          <span className="text-xl font-bold text-gray-400 tracking-[0.2em] font-mono">{participant.individualCode}</span>
+        <div className="mt-4 px-6 py-2 border border-gray-700 rounded-lg text-2xl font-mono text-gray-400 tracking-[0.2em]">
+          ID: {participant.individualCode}
         </div>
       </div>
 
       {/* Stats Grid */}
-      <div className="relative z-10 grid grid-cols-2 gap-8 w-full max-w-3xl mb-16">
-        <div className="bg-[#1A1A1A]/80 backdrop-blur-xl border-l-8 border-[#FF6B35] p-8 rounded-r-2xl">
-          <div className="flex items-center gap-4 mb-2">
-            <TrendingUp size={32} className="text-[#FF6B35]" />
-            <span className="text-2xl font-bold text-gray-400">DISTANCE</span>
+      <div className="mt-24 px-16 relative z-10">
+        <div className="grid grid-cols-2 gap-8">
+          {/* Today's Impact */}
+          <div className="col-span-2 bg-[#1A1A1A]/80 border-l-8 border-[#FF6B35] p-10 rounded-r-3xl flex justify-between items-center backdrop-blur-md">
+            <div>
+              <div className="flex items-center gap-4 mb-2 text-[#FF6B35]">
+                <Zap size={40} fill="currentColor" />
+                <span className="text-3xl font-black uppercase tracking-wider">Daily Impact</span>
+              </div>
+              <div className="text-8xl font-black text-white">{Math.round(todayPoints)} <span className="text-3xl text-gray-500 font-bold">PTS</span></div>
+            </div>
+            <div className="text-right">
+              <div className="text-2xl text-gray-400 font-bold mb-1">STREAK</div>
+              <div className="text-6xl font-black text-white flex items-center justify-end gap-3">
+                {participant.streakDays} <Flame size={48} className="text-[#FF6B35] fill-[#FF6B35]" />
+              </div>
+            </div>
           </div>
-          <div className="text-6xl font-black text-white">{todayDistance.toFixed(1)} <span className="text-2xl text-gray-500">KM</span></div>
-        </div>
-        
-        <div className="bg-[#1A1A1A]/80 backdrop-blur-xl border-l-8 border-neon-green p-8 rounded-r-2xl">
-          <div className="flex items-center gap-4 mb-2">
-            <Clock size={32} className="text-neon-green" />
-            <span className="text-2xl font-bold text-gray-400">DURATION</span>
-          </div>
-          <div className="text-6xl font-black text-white">{todayDuration} <span className="text-2xl text-gray-500">MIN</span></div>
-        </div>
 
-        <div className="bg-[#1A1A1A]/80 backdrop-blur-xl border-l-8 border-blue-500 p-8 rounded-r-2xl col-span-2 flex items-center justify-between px-12">
-          <div className="flex items-center gap-6">
-            <Flame size={40} className="text-blue-500 fill-current" />
-            <span className="text-3xl font-bold text-gray-400">CURRENT STREAK</span>
+          {/* Distance */}
+          <div className="bg-[#1A1A1A]/80 border-t-8 border-neon-green p-10 rounded-b-3xl backdrop-blur-md">
+            <div className="flex items-center gap-3 mb-4 text-neon-green">
+              <TrendingUp size={32} />
+              <span className="text-2xl font-black uppercase tracking-wider">Distance</span>
+            </div>
+            <div className="text-6xl font-black text-white">{todayDistance.toFixed(1)} <span className="text-2xl text-gray-500">KM</span></div>
           </div>
-          <div className="text-6xl font-black text-white">{participant.streakDays} <span className="text-2xl text-gray-500">DAYS</span></div>
+
+          {/* Duration */}
+          <div className="bg-[#1A1A1A]/80 border-t-8 border-blue-500 p-10 rounded-b-3xl backdrop-blur-md">
+            <div className="flex items-center gap-3 mb-4 text-blue-500">
+              <Clock size={32} />
+              <span className="text-2xl font-black uppercase tracking-wider">Duration</span>
+            </div>
+            <div className="text-6xl font-black text-white">{todayDuration} <span className="text-2xl text-gray-500">MIN</span></div>
+          </div>
         </div>
       </div>
 
-      {/* Badges Row */}
+      {/* Badges */}
       {displayBadges.length > 0 && (
-        <div className="relative z-10 w-full max-w-3xl">
-          <div className="text-center text-gray-500 tracking-widest text-xl mb-6 uppercase font-bold">Latest Achievements</div>
-          <div className="flex justify-center gap-8">
+        <div className="mt-16 px-16 relative z-10">
+          <div className="text-center mb-8">
+            <span className="text-2xl font-bold text-gray-500 tracking-[0.3em] uppercase border-b border-gray-700 pb-2">Unlocked Protocols</span>
+          </div>
+          <div className="flex justify-center gap-12">
             {displayBadges.map((badge) => {
               const Icon = IconMap[badge.icon] || IconMap.Trophy;
               return (
-                <div key={badge.id} className="flex flex-col items-center gap-3">
-                  <div className={`p-6 rounded-full bg-[#1A1A1A] border-2 ${badge.color.replace('text-', 'border-')} shadow-lg`}>
-                    <Icon className={`w-12 h-12 ${badge.color}`} />
+                <div key={badge.id} className="flex flex-col items-center gap-4">
+                  <div className={`p-6 rounded-2xl bg-[#1A1A1A] border-2 ${badge.color.replace('text-', 'border-')} shadow-[0_0_30px_rgba(0,0,0,0.5)]`}>
+                    <Icon className={`w-16 h-16 ${badge.color}`} />
                   </div>
-                  <span className="text-lg font-bold text-gray-300">{badge.name}</span>
+                  <span className="text-xl font-bold text-gray-300">{badge.name}</span>
                 </div>
               );
             })}
@@ -152,11 +141,28 @@ export const SocialShareCard = forwardRef<HTMLDivElement, Props>(({ participant,
         </div>
       )}
 
-      {/* Footer */}
-      <div className="mt-auto relative z-10 flex flex-col items-center gap-4">
-        <div className="w-24 h-1 bg-[#FF6B35]" />
-        <div className="text-2xl font-black tracking-widest uppercase">
-          #CHALLENGE_ACCEPTED
+      {/* Footer / CTA */}
+      <div className="mt-auto bg-[#1A1A1A] p-16 flex items-center justify-between border-t-4 border-[#FF6B35] relative z-10">
+        <div className="flex items-center gap-8">
+          <div className="bg-white p-4 rounded-xl">
+            <QRCodeSVG 
+              value="https://fit-o-charity-chatbot.vercel.app/"
+              size={180}
+              level="H"
+              includeMargin={false}
+            />
+          </div>
+          <div className="space-y-2">
+            <h3 className="text-4xl font-black uppercase text-white">Join the Mission</h3>
+            <div className="flex items-center gap-3 text-2xl text-gray-400 font-mono">
+              <ExternalLink size={24} />
+              fit-o-charity-chatbot.vercel.app
+            </div>
+            <p className="text-xl text-[#FF6B35] font-bold mt-2">SCAN TO KNOW MORE</p>
+          </div>
+        </div>
+        <div className="text-right">
+          <div className="text-7xl font-black text-[#2D2D2D] uppercase tracking-widest">2026</div>
         </div>
       </div>
     </div>
