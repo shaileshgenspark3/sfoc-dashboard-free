@@ -123,8 +123,10 @@ const MyPerformance = () => {
       const canvas = await html2canvas(shareCardRef.current, {
         scale: 2,
         backgroundColor: '#000000',
-        useCORS: true, // Important for profile images
-        logging: false
+        useCORS: true,
+        allowTaint: true,
+        logging: false,
+        imageTimeout: 0
       });
 
       const image = canvas.toDataURL('image/png', 1.0);

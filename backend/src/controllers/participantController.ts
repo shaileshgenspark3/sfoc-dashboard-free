@@ -73,16 +73,22 @@ export const getLeaderboard = async (req: Request, res: Response) => {
 };
 
 export const uploadProfilePicture = async (req: Request, res: Response) => {
+  console.log('📸 Upload request received for:', req.params.code);
   const file = (req as any).file;
+  
   if (!file) {
+    console.error('❌ No file in request');
     return res.status(400).json({ error: 'No image file uploaded' });
   }
+  
+  console.log('✅ File received:', file.filename);
 
   try {
     const profilePictureUrl = `/uploads/profiles/${file.filename}`;
     const participant = await ParticipantService.updateProfilePicture(req.params.code, profilePictureUrl);
     res.json({ success: true, profilePicture: participant.profilePicture });
   } catch (error: any) {
+    console.error('❌ Upload Controller Error:', error);
     res.status(500).json({ error: error.message });
   }
 };
