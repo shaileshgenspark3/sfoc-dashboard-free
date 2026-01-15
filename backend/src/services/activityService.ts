@@ -2,6 +2,7 @@ import Activity, { IActivity } from '../models/Activity.js';
 import Participant from '../models/Participant.js';
 import { broadcastActivity } from '../websocket/socketHandler.js';
 import { determineGroupCode } from '../utils/validation.js';
+import { BadgeService } from './badgeService.js';
 
 const calculatePoints = (type: string, distance: number, duration: number): number => {
   const activityType = type.toLowerCase();
@@ -100,14 +101,19 @@ export class ActivityService {
     if (derivedGroupCode) {
         participant.groupCode = derivedGroupCode; // Update participant's group if derived
     }
+    
+    // 6. Check for new Badges
+    const newBadges = await BadgeService.checkNewBadges(participant, activity);
+    
     await participant.save();
 
-    // 6. Real-time broadcast
+    // 7. Real-time broadcast
     broadcastActivity(activity);
 
     return {
       activity,
-      streak: newStreak
+      streak: newStreak,
+      newBadges
     };
   }
 

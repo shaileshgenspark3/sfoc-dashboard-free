@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
+import html2canvas from 'html2canvas';
 import { 
   User, 
   Search, 
@@ -14,7 +15,10 @@ import {
   LayoutGrid,
   Zap,
   ChevronRight,
-  Target
+  Target,
+  Medal,
+  Camera,
+  Share2
 } from 'lucide-react';
 import { 
   ResponsiveContainer, 
@@ -29,8 +33,11 @@ import {
   Cell
 } from 'recharts';
 import { activitiesApi, participantsApi, Participant, Activity, stravaApi } from '../services/api';
-import { format } from 'date-fns';
+import { format, isToday } from 'date-fns';
 import { useSearchParams } from 'react-router-dom';
+import { BadgesList } from '../components/BadgesList';
+import { AchievementPopup } from '../components/AchievementPopup';
+import { SocialShareCard } from '../components/SocialShareCard';
 
 const CHART_COLORS = ['#FF6B35', '#FF8C5A', '#CC4E14', '#E0E0E0', '#4A4A4A'];
 
@@ -42,6 +49,11 @@ const MyPerformance = () => {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [newBadges, setNewBadges] = useState<Badge[]>([]);
+  const [uploadingProfile, setUploadingProfile] = useState(false);
+  const [generatingShare, setGeneratingShare] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const shareCardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const stravaStatus = searchParams.get('strava');
@@ -73,6 +85,63 @@ const MyPerformance = () => {
     }
   };
 
+  const handleProfileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || !e.target.files[0] || !participant) return;
+    
+    const file = e.target.files[0];
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('FILE_SIZE_EXCEEDED: MAX_5MB');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('image', file);
+
+    setUploadingProfile(true);
+    try {
+      const res = await participantsApi.uploadProfilePicture(participant.individualCode, formData);
+      if (res.data.success) {
+        setParticipant(prev => prev ? { ...prev, profilePicture: res.data.profilePicture } : null);
+        toast.success('PROFILE_IMAGE_UPDATED');
+      }
+    } catch (err) {
+      toast.error('UPLOAD_FAILED: TRANSMISSION_ERROR');
+    } finally {
+      setUploadingProfile(false);
+    }
+  };
+
+  const handleShare = async () => {
+    if (!shareCardRef.current) return;
+    setGeneratingShare(true);
+    toast.loading('GENERATING_SOCIAL_CARD...', { id: 'share' });
+
+    try {
+      // Small delay to ensure render
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      const canvas = await html2canvas(shareCardRef.current, {
+        scale: 2,
+        backgroundColor: '#000000',
+        useCORS: true, // Important for profile images
+        logging: false
+      });
+
+      const image = canvas.toDataURL('image/png', 1.0);
+      const link = document.createElement('a');
+      link.download = `FIT-O-CHARITY_${format(new Date(), 'yyyy-MM-dd')}.png`;
+      link.href = image;
+      link.click();
+      
+      toast.success('DOWNLOAD_COMPLETE: READY_FOR_UPLOAD', { id: 'share' });
+    } catch (err) {
+      console.error(err);
+      toast.error('GENERATION_FAILED', { id: 'share' });
+    } finally {
+      setGeneratingShare(false);
+    }
+  };
+
   const handleStravaConnect = async () => {
     if (!participant) return;
     try {
@@ -93,6 +162,14 @@ const MyPerformance = () => {
         // Refresh data
         const aRes = await activitiesApi.getByParticipant(participant.individualCode);
         setActivities(aRes.data);
+        
+        // Check for new badges
+        if (res.data.newBadges && res.data.newBadges.length > 0) {
+          setNewBadges(res.data.newBadges);
+          // Also refresh participant to show badges in list
+          const pRes = await participantsApi.getByCode(participant.individualCode);
+          setParticipant(pRes.data);
+        }
       } else {
         toast.success('SYNC_COMPLETE: NO_NEW_DATA');
       }
@@ -176,9 +253,47 @@ const MyPerformance = () => {
 
   return (
     <div className="space-y-8 py-6 md:py-12">
+      <AchievementPopup badges={newBadges} onClose={() => setNewBadges([])} />
       {/* Mobile-Friendly Header */}
       <header className="flex flex-col md:flex-row md:items-end justify-between border-b-2 border-[#FF6B35] pb-6 gap-4 px-2">
         <div className="flex flex-col md:flex-row md:items-end gap-4 md:gap-8">
+          {/* Profile Picture */}
+          <div className="relative group">
+            <div className="w-24 h-24 md:w-32 md:h-32 rounded-xl overflow-hidden border-2 border-[#FF6B35] bg-black relative">
+              {participant?.profilePicture ? (
+                <img 
+                  src={participant.profilePicture.startsWith('http') ? participant.profilePicture : `${import.meta.env.VITE_API_URL || ''}${participant.profilePicture}`} 
+                  alt="Profile" 
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-[#1A1A1A]">
+                  <User size={40} className="text-[#FF6B35]" />
+                </div>
+              )}
+              {uploadingProfile && (
+                <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
+                  <div className="w-6 h-6 border-2 border-[#FF6B35] border-t-transparent animate-spin rounded-full" />
+                </div>
+              )}
+            </div>
+            
+            <button 
+              onClick={() => fileInputRef.current?.click()}
+              className="absolute -bottom-2 -right-2 p-2 bg-[#FF6B35] text-black hover:bg-white transition-colors shadow-lg"
+              disabled={uploadingProfile}
+            >
+              <Camera size={16} />
+            </button>
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              className="hidden" 
+              accept="image/*"
+              onChange={handleProfileUpload}
+            />
+          </div>
+
           <div className="space-y-1">
             <div className="tech-label text-[#FF6B35]">OPERATIVE_PROFILE: {participant?.individualCode}</div>
             <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-white uppercase truncate">
@@ -205,6 +320,18 @@ const MyPerformance = () => {
                 <TrendingUp size={14} />
               )}
               SYNC_DATA
+            </button>
+            <button
+              onClick={handleShare}
+              disabled={generatingShare}
+              className="flex items-center gap-2 px-3 py-1.5 border border-neon-green text-neon-green text-[10px] font-black hover:bg-neon-green hover:text-black transition-all uppercase tracking-widest disabled:opacity-50"
+            >
+              {generatingShare ? (
+                <div className="w-3 h-3 border-2 border-current border-t-transparent animate-spin" />
+              ) : (
+                <Share2 size={14} />
+              )}
+              SHARE_STATS
             </button>
           </div>
         </div>
@@ -303,6 +430,15 @@ const MyPerformance = () => {
         </div>
       </div>
 
+      {/* Badges Section */}
+      <div className="industrial-panel p-4 md:p-8 border-l-2 md:border-l-4 border-l-neon-green/80 bg-neon-green/5">
+        <div className="flex items-center gap-3 mb-6">
+          <Medal size={20} className="text-neon-green" />
+          <div className="tech-label text-neon-green">TACTICAL_MEDALS: ACHIEVEMENT_PROTOCOL</div>
+        </div>
+        <BadgesList earnedBadges={participant?.badges || []} />
+      </div>
+
       {/* Activity Log - Better for Mobile */}
       <div className="industrial-panel border-l-2 md:border-l-4 border-l-[#FF6B35] overflow-hidden">
         <div className="p-4 bg-[#1A1A1A] border-b border-[#2D2D2D] flex justify-between items-center">
@@ -373,6 +509,17 @@ const MyPerformance = () => {
           ))}
         </div>
       </div>
+
+      {/* Hidden Share Card for Generation */}
+      {participant && (
+        <div className="fixed left-[-9999px] top-[-9999px]">
+          <SocialShareCard 
+            ref={shareCardRef}
+            participant={participant}
+            todayActivities={activities.filter(a => isToday(new Date(a.createdAt)))}
+          />
+        </div>
+      )}
     </div>
   );
 };

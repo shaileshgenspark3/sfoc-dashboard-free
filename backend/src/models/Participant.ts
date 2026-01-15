@@ -17,6 +17,8 @@ export interface IParticipant extends Document {
   stravaAccessToken?: string;
   stravaRefreshToken?: string;
   stravaTokenExpiry?: number;
+  badges: { id: string; unlockedAt: Date }[];
+  profilePicture?: string;
   createdAt: Date;
 }
 
@@ -41,6 +43,11 @@ const participantSchema = new Schema<IParticipant>({
   stravaAccessToken: { type: String, default: null },
   stravaRefreshToken: { type: String, default: null },
   stravaTokenExpiry: { type: Number, default: null },
+  badges: [{
+    id: { type: String, required: true },
+    unlockedAt: { type: Date, default: Date.now }
+  }],
+  profilePicture: { type: String, default: null },
   createdAt: { type: Date, default: Date.now }
 });
 

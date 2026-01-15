@@ -16,7 +16,8 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import Confetti, { smallBurst } from '../components/Confetti';
-import { activitiesApi, ActivitySubmission } from '../services/api';
+import { activitiesApi, ActivitySubmission, Badge } from '../services/api';
+import { AchievementPopup } from '../components/AchievementPopup';
 
 const activityTypes = [
   { id: 'Walking', icon: Footprints, label: 'WALKING', desc: 'ANY_DURATION' },
@@ -37,6 +38,7 @@ const SubmitActivity = () => {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [streak, setStreak] = useState(0);
+  const [newBadges, setNewBadges] = useState<Badge[]>([]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -72,7 +74,11 @@ const SubmitActivity = () => {
 
       const response = await activitiesApi.submit(payload);
 
-      setStreak(response.data.data?.streak || 1);
+      setStreak(response.data.streak || 1);
+      if (response.data.newBadges && response.data.newBadges.length > 0) {
+        setNewBadges(response.data.newBadges);
+      }
+
       setSuccess(true);
       smallBurst();
       
@@ -96,10 +102,12 @@ const SubmitActivity = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 md:space-y-12 py-4 md:py-8 px-4 sm:px-0">
-      <Confetti trigger={success} />
-      
-      <header className="flex flex-col md:flex-row md:items-end justify-between border-b-2 border-[#FF6B35] pb-4 md:pb-6 gap-4">
+    <>
+      <AchievementPopup badges={newBadges} onClose={() => setNewBadges([])} />
+      <div className="max-w-4xl mx-auto space-y-8 md:space-y-12 py-4 md:py-8 px-4 sm:px-0">
+        <Confetti trigger={success} />
+        
+        <header className="flex flex-col md:flex-row md:items-end justify-between border-b-2 border-[#FF6B35] pb-4 md:pb-6 gap-4">
         <div>
           <div className="tech-label text-[#FF6B35]">UPLINK_MODULE: FIT-O-CHARITY_V2</div>
           <h2 className="text-3xl md:text-6xl font-black tracking-tighter text-white">SUBMIT_ACTIVITY</h2>
@@ -288,6 +296,7 @@ const SubmitActivity = () => {
         ))}
       </footer>
     </div>
+    </>
   );
 };
 

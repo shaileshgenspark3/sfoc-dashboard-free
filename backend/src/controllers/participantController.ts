@@ -76,6 +76,21 @@ export const getLeaderboard = async (req: Request, res: Response) => {
   }
 };
 
+export const uploadProfilePicture = async (req: Request, res: Response) => {
+  const multerReq = req as MulterRequest;
+  if (!multerReq.file) {
+    return res.status(400).json({ error: 'No image file uploaded' });
+  }
+
+  try {
+    const profilePictureUrl = `/uploads/profiles/${multerReq.file.filename}`;
+    const participant = await ParticipantService.updateProfilePicture(req.params.code, profilePictureUrl);
+    res.json({ success: true, profilePicture: participant.profilePicture });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 // ... other controller methods
 export const getParticipantsByGroup = async (req: Request, res: Response) => {};
 export const updateParticipantGroup = async (req: Request, res: Response) => {};

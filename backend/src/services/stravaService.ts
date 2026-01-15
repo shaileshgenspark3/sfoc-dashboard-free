@@ -70,6 +70,7 @@ export class StravaService {
 
     const stravaActivities = response.data;
     const synced = [];
+    const newBadges: any[] = [];
 
     for (const sa of stravaActivities) {
       // Map Strava types to our types
@@ -81,7 +82,7 @@ export class StravaService {
       else if (sa.type === 'WeightTraining') activityType = 'Gym';
 
       try {
-        await ActivityService.submit({
+        const result = await ActivityService.submit({
           code: participant.individualCode,
           activityType,
           distance: sa.distance / 1000, // Strava gives meters
@@ -89,6 +90,9 @@ export class StravaService {
           stravaId: sa.id.toString()
         });
         synced.push(sa.id);
+        if (result.newBadges && result.newBadges.length > 0) {
+          newBadges.push(...result.newBadges);
+        }
       } catch (err: any) {
         if (err.code === 11000 || err.message?.includes('duplicate key')) {
             console.log(`ℹ️ Activity ${sa.id} already synced. Skipping.`);
@@ -98,7 +102,7 @@ export class StravaService {
       }
     }
 
-    return synced;
+    return { synced, newBadges };
   }
 
   static async syncAllAthletes() {
@@ -111,7 +115,7 @@ export class StravaService {
     let totalSynced = 0;
     for (const p of participants) {
       try {
-        const synced = await this.syncActivities(p.individualCode);
+        const { synced } = await this.syncActivities(p.individualCode) || { synced: [] };
         totalSynced += synced?.length || 0;
       } catch (err) {
         console.error(`❌ Failed to sync Strava for ${p.individualCode}:`, err);

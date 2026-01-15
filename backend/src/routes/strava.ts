@@ -30,8 +30,10 @@ router.get('/callback', async (req, res) => {
 
 router.post('/sync/:participantCode', async (req, res) => {
   try {
-    const synced = await StravaService.syncActivities(req.params.participantCode);
-    res.json({ success: true, syncedCount: synced?.length || 0 });
+    const result = await StravaService.syncActivities(req.params.participantCode);
+    const synced = result?.synced || [];
+    const newBadges = result?.newBadges || [];
+    res.json({ success: true, syncedCount: synced.length, newBadges });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }

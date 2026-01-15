@@ -158,4 +158,14 @@ export class ParticipantService {
   static async getAll() {
     return Participant.find({ isActive: true }).sort({ totalPoints: -1 });
   }
+
+  static async updateProfilePicture(code: string, profilePictureUrl: string) {
+    const participant = await Participant.findOneAndUpdate(
+      { individualCode: code.toUpperCase() },
+      { profilePicture: profilePictureUrl },
+      { new: true }
+    );
+    if (!participant) throw new Error('Participant not found');
+    return participant;
+  }
 }

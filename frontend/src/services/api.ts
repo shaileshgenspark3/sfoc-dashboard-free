@@ -52,8 +52,18 @@ export interface Activity {
   createdAt: string;
 }
 
+export interface Badge {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  color: string;
+  unlockedAt: string;
+  isNew?: boolean;
+}
+
 export const activitiesApi = {
-  submit: (data: ActivitySubmission) => api.post('/activities/submit', data),
+  submit: (data: ActivitySubmission) => api.post<{ activity: Activity, streak: number, newBadges: Badge[] }>('/activities/submit', data),
   getStats: () => api.get<Stats>('/activities/stats'),
   getToday: () => api.get<Activity[]>('/activities/today'),
   getByParticipant: (code: string) => api.get<Activity[]>(`/activities/participant/${code}`),
@@ -69,6 +79,8 @@ export interface Participant {
   streakDays: number;
   mobile?: string;
   activityType?: string;
+  badges: Badge[];
+  profilePicture: string | null;
 }
 
 export const participantsApi = {
@@ -79,6 +91,9 @@ export const participantsApi = {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),
   getByCode: (code: string) => api.get<Participant>(`/participants/code/${code}`),
+  uploadProfilePicture: (code: string, formData: FormData) => api.post<{ success: boolean; profilePicture: string }>(`/participants/${code}/upload-profile`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
 };
 
 export interface Group {
