@@ -12,7 +12,7 @@ class ReminderJob {
       await this.checkAndSendReminders();
     });
 
-    console.log('✅ Reminder cron job started - will run daily at 22:00 (18:00 is triggered after Strava sync)');
+    console.log('✅ Reminder cron job started - will run daily at 22:00 (12:00 is triggered after Strava sync)');
   }
 
   static async checkAndSendReminders() {

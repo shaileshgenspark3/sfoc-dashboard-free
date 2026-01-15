@@ -85,11 +85,16 @@ export class StravaService {
           code: participant.individualCode,
           activityType,
           distance: sa.distance / 1000, // Strava gives meters
-          duration: Math.round(sa.moving_time / 60) // Strava gives seconds
+          duration: Math.round(sa.moving_time / 60), // Strava gives seconds
+          stravaId: sa.id.toString()
         });
         synced.push(sa.id);
-      } catch (err) {
-        console.error(`Failed to sync Strava activity ${sa.id}:`, err);
+      } catch (err: any) {
+        if (err.code === 11000 || err.message?.includes('duplicate key')) {
+            console.log(`ℹ️ Activity ${sa.id} already synced. Skipping.`);
+        } else {
+            console.error(`Failed to sync Strava activity ${sa.id}:`, err);
+        }
       }
     }
 

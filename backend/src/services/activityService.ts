@@ -31,12 +31,13 @@ export class ActivityService {
     distance?: number;
     duration?: number;
     groupCode?: string;
+    stravaId?: string;
   }) {
     if (!data) {
       console.error('[ERROR] ActivityService.submit called with undefined data');
       throw new Error('Internal Server Error: Missing activity data.');
     }
-    const { code, activityType, distance = 0, duration = 0 } = data; // Ignore incoming groupCode
+    const { code, activityType, distance = 0, duration = 0, stravaId } = data; // Ignore incoming groupCode
 
     // 1. Find Participant
     const participant = await Participant.findOne({ individualCode: code.toUpperCase() });
@@ -59,7 +60,8 @@ export class ActivityService {
       duration,
       points,
       groupCode: derivedGroupCode || participant.groupCode, // Prioritize derived, then existing
-      date: new Date()
+      date: new Date(),
+      stravaId
     });
 
     // 5. Update Streak & Stats

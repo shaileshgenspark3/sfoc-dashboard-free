@@ -10,6 +10,7 @@ export interface IActivity extends Document {
   groupCode?: string;
   date: Date;
   createdAt: Date;
+  stravaId?: string;
 }
 
 const activitySchema = new Schema<IActivity>({
@@ -20,7 +21,8 @@ const activitySchema = new Schema<IActivity>({
   duration: { type: Number, default: 0 },
   points: { type: Number, default: 0 },
   groupCode: { type: String, uppercase: true },
-  date: { type: Date, default: Date.now }
+  date: { type: Date, default: Date.now },
+  stravaId: { type: String, unique: true, sparse: true }
 }, { timestamps: true });
 
 activitySchema.index({ participantCode: 1 });
