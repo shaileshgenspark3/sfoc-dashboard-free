@@ -132,9 +132,18 @@ export class BadgeService {
   }
 
   static getParticipantBadges(participant: IParticipant) {
-    return participant.badges.map(b => ({
-      ...b,
-      ...BADGE_DEFINITIONS[b.id]
-    }));
+    return participant.badges.map(b => {
+      const badgeData = (b as any).toObject ? (b as any).toObject() : b;
+      const def = BADGE_DEFINITIONS[b.id] || {
+        name: 'Unknown Badge',
+        description: 'Badge definition not found',
+        icon: 'HelpCircle',
+        color: 'text-gray-500'
+      };
+      return {
+        ...badgeData,
+        ...def
+      };
+    });
   }
 }

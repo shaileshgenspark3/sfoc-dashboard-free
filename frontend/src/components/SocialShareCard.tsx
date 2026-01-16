@@ -130,10 +130,13 @@ export const SocialShareCard = forwardRef<HTMLDivElement, Props>(({ participant,
           <div className="flex justify-center gap-12">
             {displayBadges.map((badge) => {
               const Icon = IconMap[badge.icon] || IconMap.Trophy;
+              const borderColor = badge.color ? badge.color.replace('text-', 'border-') : 'border-gray-500';
+              const textColor = badge.color || 'text-gray-500';
+              
               return (
                 <div key={badge.id} className="flex flex-col items-center gap-4">
-                  <div className={`p-6 rounded-2xl bg-[#1A1A1A] border-2 ${badge.color.replace('text-', 'border-')} shadow-[0_0_30px_rgba(0,0,0,0.5)]`}>
-                    <Icon className={`w-16 h-16 ${badge.color}`} />
+                  <div className={`p-6 rounded-2xl bg-[#1A1A1A] border-2 ${borderColor} shadow-[0_0_30px_rgba(0,0,0,0.5)]`}>
+                    <Icon className={`w-16 h-16 ${textColor}`} />
                   </div>
                   <span className="text-xl font-bold text-gray-300">{badge.name}</span>
                 </div>

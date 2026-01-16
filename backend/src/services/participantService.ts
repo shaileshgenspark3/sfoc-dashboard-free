@@ -2,6 +2,7 @@ import Participant, { IParticipant } from '../models/Participant.js';
 import { generateCode } from '../utils/codeGenerator.js';
 import EmailService from './emailService.js';
 import WhatsAppService from './whatsappService.js';
+import { BadgeService } from './badgeService.js';
 
 // Helper to determine group from code
 const determineGroupCode = (code: string): string | null => {
@@ -145,7 +146,14 @@ export class ParticipantService {
       individualCode: code.toUpperCase() 
     });
     if (!participant) throw new Error('Invalid participant code.');
-    return participant;
+    
+    // Enrich badges with definitions
+    const enrichedBadges = BadgeService.getParticipantBadges(participant);
+    
+    return {
+      ...participant.toObject(),
+      badges: enrichedBadges
+    };
   }
 
   static async getLeaderboard(limit = 50) {

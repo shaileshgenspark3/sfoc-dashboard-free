@@ -81,6 +81,9 @@ export const AchievementPopup: React.FC<Props> = ({ badges, onClose }) => {
             <div className="space-y-6">
               {badges.map((badge) => {
                 const Icon = IconMap[badge.icon] || IconMap.Trophy;
+                const borderColor = badge.color ? badge.color.replace('text-', 'border-') : 'border-gray-500';
+                const textColor = badge.color || 'text-gray-500';
+
                 return (
                   <motion.div 
                     key={badge.id}
@@ -89,10 +92,10 @@ export const AchievementPopup: React.FC<Props> = ({ badges, onClose }) => {
                     transition={{ delay: 0.2 }}
                     className="flex flex-col items-center p-4 bg-white/5 rounded-lg border border-white/10"
                   >
-                    <div className={`p-4 rounded-full bg-gray-800 mb-3 border-2 ${badge.color.replace('text-', 'border-')}`}>
-                      <Icon className={`w-12 h-12 ${badge.color}`} />
+                    <div className={`p-4 rounded-full bg-gray-800 mb-3 border-2 ${borderColor}`}>
+                      <Icon className={`w-12 h-12 ${textColor}`} />
                     </div>
-                    <h3 className={`text-xl font-bold ${badge.color} mb-1`}>{badge.name}</h3>
+                    <h3 className={`text-xl font-bold ${textColor} mb-1`}>{badge.name}</h3>
                     <p className="text-gray-400 text-sm">{badge.description}</p>
                   </motion.div>
                 );
