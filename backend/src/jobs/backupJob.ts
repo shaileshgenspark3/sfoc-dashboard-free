@@ -44,7 +44,7 @@ class BackupJob {
 
             for (const { name, model } of collections) {
                 console.log(`📦 Backing up ${name}...`);
-                const data = await model.find({});
+                const data = await (model as any).find({});
                 const filePath = path.join(backupPath, `${name}.json`);
 
                 await fs.writeFile(filePath, JSON.stringify(data, null, 2));
