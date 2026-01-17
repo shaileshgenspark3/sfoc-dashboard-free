@@ -20,8 +20,8 @@ export const StunningStatsShareCard = forwardRef<HTMLDivElement, Props>(({ parti
     const todayDuration = todayActivities.reduce((acc, curr) => acc + (curr.duration || 0), 0);
     const todayPoints = todayActivities.reduce((acc, curr) => acc + (curr.points || 0), 0);
 
-    // Charity Calculation (Explicit: 10 Points = ₹1)
-    const charityAmount = Math.floor(participant.totalPoints / 10);
+    // Charity Calculation (Matches Dashboard: 1 Point = ₹10)
+    const charityAmount = participant.totalPoints * 10;
 
     // Get top 3 badges
     const displayBadges = (participant.badges || []).slice(-3).reverse();
