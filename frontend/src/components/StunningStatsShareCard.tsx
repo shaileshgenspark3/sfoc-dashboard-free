@@ -5,6 +5,7 @@ import { IconMap } from '../utils/iconMap';
 import { BADGE_DEFINITIONS } from '../utils/badgeDefinitions';
 import { Zap, Flame, TrendingUp, Clock, ExternalLink } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
+import { getAssetUrl } from '../utils/urlHelper';
 
 interface Props {
     participant: Participant;
@@ -66,7 +67,12 @@ export const StunningStatsShareCard = forwardRef<HTMLDivElement, Props>(({ parti
                 {/* Profile Pic with Overlay */}
                 <div className="w-[420px] relative rounded-[3rem] overflow-hidden shadow-[0_0_60px_rgba(0,0,0,0.5)] border-4 border-gray-800 bg-gray-900 group">
                     {participant.profilePicture ? (
-                        <img src={participant.profilePicture} className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" alt={participant.name} />
+                        <img 
+                            src={getAssetUrl(participant.profilePicture)} 
+                            className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" 
+                            alt={participant.name} 
+                            crossOrigin="anonymous"
+                        />
                     ) : (
                         <div className="w-full h-full flex items-center justify-center bg-gray-800 text-gray-600 font-black text-9xl">
                             {participant.individualCode.substring(0, 2)}
