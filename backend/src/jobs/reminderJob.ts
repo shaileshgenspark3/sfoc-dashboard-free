@@ -10,6 +10,9 @@ class ReminderJob {
     cron.schedule('0 22 * * *', async () => {
       console.log('🕐 Running final daily nudge (22:00)...');
       await this.checkAndSendReminders();
+    }, {
+      scheduled: true,
+      timezone: "Asia/Kolkata"
     });
 
     console.log('✅ Reminder cron job started - will run daily at 22:00 (12:00 is triggered after Strava sync)');

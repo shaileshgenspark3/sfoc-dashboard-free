@@ -1,0 +1,74 @@
+[
+  {
+    "_id": "696bd1f07ed60276881cb610",
+    "name": "Demo Athlete",
+    "email": "test01@sukrutparivar.com",
+    "mobile": "+1234567890",
+    "activityType": "Running",
+    "individualCode": "TEST01",
+    "groupCode": null,
+    "isActive": true,
+    "totalDistance": 0,
+    "totalDuration": 0,
+    "totalPoints": 0,
+    "streakDays": 0,
+    "lastActivityDate": null,
+    "stravaId": null,
+    "stravaAccessToken": null,
+    "stravaRefreshToken": null,
+    "stravaTokenExpiry": null,
+    "profilePicture": null,
+    "badges": [],
+    "createdAt": "2026-01-17T18:16:16.301Z",
+    "__v": 0
+  },
+  {
+    "_id": "696bd1f07ed60276881cb621",
+    "name": "Group 1000 Captain",
+    "email": "1999@sukrutparivar.com",
+    "mobile": "+1234567890",
+    "activityType": "Running",
+    "individualCode": "1999",
+    "groupCode": "1000",
+    "isActive": true,
+    "totalDistance": 10,
+    "totalDuration": 0,
+    "totalPoints": 100,
+    "streakDays": 1,
+    "lastActivityDate": "2026-01-17T18:17:11.520Z",
+    "stravaId": null,
+    "stravaAccessToken": null,
+    "stravaRefreshToken": null,
+    "stravaTokenExpiry": null,
+    "profilePicture": null,
+    "badges": [
+      {
+        "id": "first_step",
+        "unlockedAt": "2026-01-17T18:17:11.520Z",
+        "_id": "696bd2277ed60276881cb644"
+      },
+      {
+        "id": "night_owl",
+        "unlockedAt": "2026-01-17T18:17:11.522Z",
+        "_id": "696bd2277ed60276881cb645"
+      },
+      {
+        "id": "weekend_warrior",
+        "unlockedAt": "2026-01-17T18:17:11.523Z",
+        "_id": "696bd2277ed60276881cb646"
+      },
+      {
+        "id": "daily_5k",
+        "unlockedAt": "2026-01-17T18:17:11.527Z",
+        "_id": "696bd2277ed60276881cb648"
+      },
+      {
+        "id": "daily_10k",
+        "unlockedAt": "2026-01-17T18:17:11.527Z",
+        "_id": "696bd2277ed60276881cb649"
+      }
+    ],
+    "createdAt": "2026-01-17T18:16:16.605Z",
+    "__v": 1
+  }
+]

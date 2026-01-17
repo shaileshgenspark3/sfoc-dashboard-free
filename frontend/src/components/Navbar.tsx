@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trophy, Users, LayoutGrid, Plus, Activity, ShieldAlert, User, Menu, X } from 'lucide-react';
+import { Trophy, Users, LayoutGrid, Plus, Activity, ShieldAlert, User, Menu, X, MessageCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { settingsApi } from '../services/api';
 
@@ -27,6 +27,7 @@ const Navbar = () => {
   const navItems = [
     { path: '/', icon: LayoutGrid, label: 'DASHBOARD' },
     { path: '/submit', icon: Plus, label: 'SUBMIT ACTIVITY', highlight: true },
+    { path: '/chat', icon: MessageCircle, label: 'CHAT' },
     { path: '/my-performance', icon: User, label: 'MY PERFORMANCE' },
     { path: '/group-performance', icon: Users, label: 'GROUP PERFORMANCE' },
     ...(showLeaderboard ? [{ path: '/leaderboard', icon: Trophy, label: 'LEADERBOARD' }] : []),
@@ -54,13 +55,12 @@ const Navbar = () => {
               return (
                 <Link key={item.path} to={item.path}>
                   <motion.div
-                    className={`flex items-center gap-2 px-3 py-1.5 transition-all duration-200 ${
-                      isActive(item.path)
-                        ? 'text-[#FF6B35]'
-                        : item.highlight 
-                        ? 'bg-[#FF6B35] text-black hover:bg-[#FF8C61]' 
+                    className={`flex items-center gap-2 px-3 py-1.5 transition-all duration-200 ${isActive(item.path)
+                      ? 'text-[#FF6B35]'
+                      : item.highlight
+                        ? 'bg-[#FF6B35] text-black hover:bg-[#FF8C61]'
                         : 'text-[#8C8C8C] hover:text-[#E5E5E5]'
-                    }`}
+                      }`}
                     whileHover={{ x: isActive(item.path) ? 0 : 2 }}
                     whileTap={{ scale: 0.98 }}
                   >

@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
-import { 
-  Users, 
-  Upload, 
-  UserPlus, 
-  FileText, 
-  AlertCircle, 
-  CheckCircle2, 
+import {
+  Users,
+  Upload,
+  UserPlus,
+  FileText,
+  AlertCircle,
+  CheckCircle2,
   ShieldAlert,
   ArrowRight,
   Database,
@@ -17,20 +17,22 @@ import {
   Trash2,
   Edit2,
   X,
-  Save
+  Save,
+  RefreshCw
 } from 'lucide-react';
-import { participantsApi, settingsApi, adminApi, Activity } from '../services/api';
+import { participantsApi, settingsApi, adminApi, groupsApi, Activity } from '../services/api';
 import { format } from 'date-fns';
 
 const AdminDashboard = () => {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [password, setPassword] = useState('');
-  const [activeTab, setActiveTab] = useState<'manual' | 'bulk' | 'activities'>('manual');
+  const [activeTab, setActiveTab] = useState<'manual' | 'bulk' | 'activities' | 'groups'>('manual');
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loadingActivities, setLoadingActivities] = useState(false);
   const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
-  
+  const [syncLoading, setSyncLoading] = useState(false);
+
   const [manualData, setManualData] = useState({
     name: '',
     email: '',
@@ -41,6 +43,9 @@ const AdminDashboard = () => {
   const [file, setFile] = useState<File | null>(null);
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResults] = useState<any>(null);
+  const [groups, setGroups] = useState<any[]>([]);
+  const [loadingGroups, setLoadingGroups] = useState(false);
+  const [editingGroup, setEditingGroup] = useState<any>(null);
 
   useEffect(() => {
     if (isAuthorized) {
@@ -51,6 +56,9 @@ const AdminDashboard = () => {
   useEffect(() => {
     if (isAuthorized && activeTab === 'activities') {
       fetchActivities();
+    }
+    if (isAuthorized && activeTab === 'groups') {
+      fetchGroups();
     }
   }, [isAuthorized, activeTab]);
 
@@ -158,10 +166,51 @@ const AdminDashboard = () => {
     }
   };
 
+  const fetchGroups = async () => {
+    setLoadingGroups(true);
+    try {
+      const res = await groupsApi.getAll();
+      setGroups(res.data);
+    } catch (err) {
+      toast.error('Failed to fetch groups');
+    } finally {
+      setLoadingGroups(false);
+    }
+  };
+
+  const handleUpdateGroup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingGroup) return;
+    try {
+      const res = await groupsApi.update(editingGroup.groupCode, {
+        groupName: editingGroup.groupName,
+        description: editingGroup.description
+      });
+      setGroups(groups.map(g => g.groupCode === editingGroup.groupCode ? res.data : g));
+      setEditingGroup(null);
+      toast.success('GROUP_UPDATED');
+    } catch (err) {
+      toast.error('UPDATE_FAILED');
+    }
+  };
+
+  const handleSync = async () => {
+    if (!window.confirm('Force sync all Strava data? This may take a while.')) return;
+    setSyncLoading(true);
+    try {
+      const res = await adminApi.syncStrava();
+      toast.success(`SYNC_COMPLETE: ${res.data.count} ACTIVITIES`);
+    } catch (err) {
+      toast.error('SYNC_FAILED');
+    } finally {
+      setSyncLoading(false);
+    }
+  };
+
   if (!isAuthorized) {
     return (
       <div className="min-h-[80vh] flex items-center justify-center px-4">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="industrial-panel p-12 max-w-md w-full border-t-4 border-t-[#FF6B35] relative overflow-hidden"
@@ -169,7 +218,7 @@ const AdminDashboard = () => {
           <div className="absolute top-0 right-0 p-4 opacity-10">
             <Lock size={120} />
           </div>
-          
+
           <div className="relative z-10 space-y-8">
             <div className="text-center space-y-2">
               <div className="tech-label text-[#FF6B35]">SECURITY_GATE: LEVEL_01</div>
@@ -179,8 +228,8 @@ const AdminDashboard = () => {
             <form onSubmit={handleAuth} className="space-y-6">
               <div className="space-y-2">
                 <label className="tech-label text-white">ACCESS_CODE</label>
-                <input 
-                  type="password" 
+                <input
+                  type="password"
                   autoFocus
                   className="w-full bg-[#050505] border-2 border-[#2D2D2D] p-6 text-white text-center text-4xl font-black tracking-[0.5em] focus:border-[#FF6B35] outline-none transition-all"
                   value={password}
@@ -213,7 +262,7 @@ const AdminDashboard = () => {
           <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-white">SYSTEM_ADMIN</h1>
         </div>
         <div className="flex items-center gap-4">
-          <a 
+          <a
             href={`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/admin/export`}
             target="_blank"
             rel="noopener noreferrer"
@@ -226,23 +275,29 @@ const AdminDashboard = () => {
       </header>
 
       <div className="flex flex-wrap gap-4">
-        <button 
+        <button
           onClick={() => setActiveTab('manual')}
           className={`px-6 py-3 font-bold tracking-widest text-xs transition-all ${activeTab === 'manual' ? 'bg-[#FF6B35] text-black' : 'bg-[#1A1A1A] text-gray-500 border border-[#2D2D2D]'}`}
         >
           MANUAL_ENTRY
         </button>
-        <button 
+        <button
           onClick={() => setActiveTab('bulk')}
           className={`px-6 py-3 font-bold tracking-widest text-xs transition-all ${activeTab === 'bulk' ? 'bg-[#FF6B35] text-black' : 'bg-[#1A1A1A] text-gray-500 border border-[#2D2D2D]'}`}
         >
           BULK_IMPORT
         </button>
-        <button 
+        <button
           onClick={() => setActiveTab('activities')}
           className={`px-6 py-3 font-bold tracking-widest text-xs transition-all ${activeTab === 'activities' ? 'bg-[#FF6B35] text-black' : 'bg-[#1A1A1A] text-gray-500 border border-[#2D2D2D]'}`}
         >
           ACTIVITY_LOGS
+        </button>
+        <button
+          onClick={() => setActiveTab('groups')}
+          className={`px-6 py-3 font-bold tracking-widest text-xs transition-all ${activeTab === 'groups' ? 'bg-[#FF6B35] text-black' : 'bg-[#1A1A1A] text-gray-500 border border-[#2D2D2D]'}`}
+        >
+          MANAGE_SQUADS
         </button>
       </div>
 
@@ -250,7 +305,7 @@ const AdminDashboard = () => {
         <div className="lg:col-span-8">
           <AnimatePresence mode="wait">
             {activeTab === 'manual' && (
-              <motion.form 
+              <motion.form
                 key="manual"
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -266,51 +321,51 @@ const AdminDashboard = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="tech-label text-white">Participant Code (Required)</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       required
                       placeholder="e.g. 1999"
                       className="w-full bg-[#050505] border-2 border-[#2D2D2D] p-4 text-white focus:border-[#FF6B35] outline-none uppercase"
                       value={manualData.code}
-                      onChange={e => setManualData({...manualData, code: e.target.value.toUpperCase()})}
+                      onChange={e => setManualData({ ...manualData, code: e.target.value.toUpperCase() })}
                     />
                   </div>
                   <div className="space-y-2">
                     <label className="tech-label text-white">Full Name</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       required
                       className="w-full bg-[#050505] border-2 border-[#2D2D2D] p-4 text-white focus:border-[#FF6B35] outline-none"
                       value={manualData.name}
-                      onChange={e => setManualData({...manualData, name: e.target.value})}
+                      onChange={e => setManualData({ ...manualData, name: e.target.value })}
                     />
                   </div>
                   <div className="space-y-2">
                     <label className="tech-label text-white">Email Address</label>
-                    <input 
-                      type="email" 
+                    <input
+                      type="email"
                       required
                       className="w-full bg-[#050505] border-2 border-[#2D2D2D] p-4 text-white focus:border-[#FF6B35] outline-none"
                       value={manualData.email}
-                      onChange={e => setManualData({...manualData, email: e.target.value})}
+                      onChange={e => setManualData({ ...manualData, email: e.target.value })}
                     />
                   </div>
                   <div className="space-y-2">
                     <label className="tech-label text-white">Mobile Number</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       required
                       className="w-full bg-[#050505] border-2 border-[#2D2D2D] p-4 text-white focus:border-[#FF6B35] outline-none"
                       value={manualData.mobile}
-                      onChange={e => setManualData({...manualData, mobile: e.target.value})}
+                      onChange={e => setManualData({ ...manualData, mobile: e.target.value })}
                     />
                   </div>
                   <div className="space-y-2">
                     <label className="tech-label text-white">Primary Activity</label>
-                    <select 
+                    <select
                       className="w-full bg-[#050505] border-2 border-[#2D2D2D] p-4 text-white focus:border-[#FF6B35] outline-none appearance-none"
                       value={manualData.activityType}
-                      onChange={e => setManualData({...manualData, activityType: e.target.value})}
+                      onChange={e => setManualData({ ...manualData, activityType: e.target.value })}
                     >
                       {['Walking', 'Running', 'Cycling', 'Yoga', 'Gym', 'Other'].map(type => (
                         <option key={type} value={type}>{type.toUpperCase()}</option>
@@ -327,7 +382,7 @@ const AdminDashboard = () => {
             )}
 
             {activeTab === 'bulk' && (
-              <motion.div 
+              <motion.div
                 key="bulk"
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -340,11 +395,11 @@ const AdminDashboard = () => {
                 </div>
 
                 <div className="border-2 border-dashed border-[#2D2D2D] p-12 text-center space-y-4 hover:border-[#FF6B35]/50 transition-colors">
-                  <input 
-                    type="file" 
-                    id="csv-upload" 
-                    className="hidden" 
-                    accept=".csv" 
+                  <input
+                    type="file"
+                    id="csv-upload"
+                    className="hidden"
+                    accept=".csv"
                     onChange={handleFileChange}
                   />
                   <label htmlFor="csv-upload" className="cursor-pointer group">
@@ -356,7 +411,7 @@ const AdminDashboard = () => {
                   </label>
                 </div>
 
-                <button 
+                <button
                   onClick={handleBulkImport}
                   disabled={importing || !file}
                   className={`btn-safety w-full py-4 flex items-center justify-center gap-3 ${importing || !file ? 'opacity-50 cursor-not-allowed' : ''}`}
@@ -387,7 +442,7 @@ const AdminDashboard = () => {
             )}
 
             {activeTab === 'activities' && (
-              <motion.div 
+              <motion.div
                 key="activities"
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -436,13 +491,13 @@ const AdminDashboard = () => {
                             </td>
                             <td className="p-4 text-right">
                               <div className="flex justify-end gap-2">
-                                <button 
+                                <button
                                   onClick={() => setEditingActivity(activity)}
                                   className="p-2 hover:text-[#FF6B35] transition-colors"
                                 >
                                   <Edit2 size={16} />
                                 </button>
-                                <button 
+                                <button
                                   onClick={() => handleDeleteActivity(activity._id)}
                                   className="p-2 hover:text-red-500 transition-colors"
                                 >
@@ -454,6 +509,49 @@ const AdminDashboard = () => {
                         ))}
                       </tbody>
                     </table>
+                  )}
+                </div>
+              </motion.div>
+            )}
+
+            {activeTab === 'groups' && (
+              <motion.div
+                key="groups"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                className="industrial-panel p-0 overflow-hidden"
+              >
+                <div className="p-6 border-b border-[#2D2D2D] bg-[#1A1A1A]">
+                  <div className="flex items-center gap-3">
+                    <Users className="text-[#FF6B35]" size={20} />
+                    <h3 className="text-xl font-bold uppercase tracking-tight">MANAGE SQUADS</h3>
+                  </div>
+                </div>
+
+                <div className="max-h-[600px] overflow-y-auto p-6">
+                  {loadingGroups ? (
+                    <div className="p-12 text-center text-gray-500">Retrieving squads...</div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {groups.map((group) => (
+                        <div key={group._id} className="p-4 bg-[#1F1F1F] border border-[#3F3F3F] flex items-center justify-between hover:border-[#FF6B35] transition-colors">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h4 className="font-bold text-white tracking-tight">{group.groupName}</h4>
+                              <span className="text-[10px] font-mono text-[#FF6B35] bg-[#333] px-1 rounded">{group.groupCode}</span>
+                            </div>
+                            <p className="text-[10px] text-gray-500 mt-1 uppercase tracking-widest">{group.members?.length || 0} OPERATIVES</p>
+                          </div>
+                          <button
+                            onClick={() => setEditingGroup(group)}
+                            className="p-2 bg-[#2D2D2D] hover:bg-[#FF6B35] hover:text-black transition-colors rounded"
+                          >
+                            <Edit2 size={16} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
                   )}
                 </div>
               </motion.div>
@@ -473,11 +571,11 @@ const AdminDashboard = () => {
                   <p className="text-xs font-bold text-white uppercase tracking-tighter">Leaderboard Tab</p>
                   <p className="text-[9px] text-gray-500 font-bold uppercase">Global visibility control</p>
                 </div>
-                <button 
+                <button
                   onClick={toggleLeaderboard}
                   className={`w-12 h-6 rounded-full transition-all relative ${showLeaderboard ? 'bg-[#FF6B35]' : 'bg-[#333]'}`}
                 >
-                  <motion.div 
+                  <motion.div
                     animate={{ x: showLeaderboard ? 26 : 4 }}
                     className="absolute top-1 w-4 h-4 bg-white rounded-full shadow-lg"
                   />
@@ -492,17 +590,32 @@ const AdminDashboard = () => {
                   </div>
                   <span className="text-[10px] font-mono">12%</span>
                 </div>
+
+                <button
+                  onClick={handleSync}
+                  disabled={syncLoading}
+                  className="w-full p-4 bg-[#1F1F1F] border border-[#3F3F3F] flex items-center justify-between hover:bg-[#2D2D2D] transition-colors group"
+                >
+                  <div>
+                    <p className="text-xs font-bold text-white uppercase tracking-tighter group-hover:text-[#FF6B35] transition-colors">Force Strava Sync</p>
+                    <p className="text-[9px] text-gray-500 font-bold uppercase">Manual data fetch trigger</p>
+                  </div>
+                  <RefreshCw
+                    size={16}
+                    className={`text-[#8C8C8C] group-hover:text-[#FF6B35] transition-colors ${syncLoading ? 'animate-spin' : ''}`}
+                  />
+                </button>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Edit Modal */}
+      {/* Edit Activity Modal */}
       <AnimatePresence>
         {editingActivity && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
@@ -518,10 +631,10 @@ const AdminDashboard = () => {
               <form onSubmit={handleUpdateActivity} className="space-y-6">
                 <div className="space-y-2">
                   <label className="tech-label text-white">Activity Type</label>
-                  <select 
+                  <select
                     className="w-full bg-[#050505] border border-[#3F3F3F] p-3 text-white"
                     value={editingActivity.activityType}
-                    onChange={e => setEditingActivity({...editingActivity, activityType: e.target.value})}
+                    onChange={e => setEditingActivity({ ...editingActivity, activityType: e.target.value })}
                   >
                     {['Walking', 'Running', 'Cycling', 'Yoga', 'Gym'].map(t => (
                       <option key={t} value={t}>{t}</option>
@@ -532,21 +645,21 @@ const AdminDashboard = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="tech-label text-white">Distance (KM)</label>
-                    <input 
+                    <input
                       type="number"
                       step="0.1"
                       className="w-full bg-[#050505] border border-[#3F3F3F] p-3 text-white"
                       value={editingActivity.distance}
-                      onChange={e => setEditingActivity({...editingActivity, distance: Number(e.target.value)})}
+                      onChange={e => setEditingActivity({ ...editingActivity, distance: Number(e.target.value) })}
                     />
                   </div>
                   <div className="space-y-2">
                     <label className="tech-label text-white">Duration (MIN)</label>
-                    <input 
+                    <input
                       type="number"
                       className="w-full bg-[#050505] border border-[#3F3F3F] p-3 text-white"
                       value={editingActivity.duration}
-                      onChange={e => setEditingActivity({...editingActivity, duration: Number(e.target.value)})}
+                      onChange={e => setEditingActivity({ ...editingActivity, duration: Number(e.target.value) })}
                     />
                   </div>
                 </div>
@@ -554,6 +667,64 @@ const AdminDashboard = () => {
                 <button type="submit" className="btn-safety w-full py-4 flex items-center justify-center gap-3">
                   <Save size={20} />
                   SAVE_CHANGES
+                </button>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Edit Group Modal */}
+      <AnimatePresence>
+        {editingGroup && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="industrial-panel p-8 w-full max-w-lg border-2 border-[#FF6B35]"
+            >
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-2xl font-black uppercase tracking-tighter text-white">RENAME_SQUAD</h3>
+                <button onClick={() => setEditingGroup(null)} className="text-gray-500 hover:text-white">
+                  <X size={24} />
+                </button>
+              </div>
+
+              <form onSubmit={handleUpdateGroup} className="space-y-6">
+                <div className="space-y-2">
+                  <label className="tech-label text-white">Squad Code (Immutable)</label>
+                  <input
+                    type="text"
+                    disabled
+                    className="w-full bg-[#050505] border border-[#3F3F3F] p-3 text-gray-500 cursor-not-allowed"
+                    value={editingGroup.groupCode}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="tech-label text-white">Squad Name</label>
+                  <input
+                    type="text"
+                    required
+                    className="w-full bg-[#050505] border border-[#3F3F3F] p-3 text-white focus:border-[#FF6B35] outline-none"
+                    value={editingGroup.groupName}
+                    onChange={e => setEditingGroup({ ...editingGroup, groupName: e.target.value })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="tech-label text-white">Description (Optional)</label>
+                  <textarea
+                    className="w-full bg-[#050505] border border-[#3F3F3F] p-3 text-white focus:border-[#FF6B35] outline-none h-24"
+                    value={editingGroup.description || ''}
+                    onChange={e => setEditingGroup({ ...editingGroup, description: e.target.value })}
+                  />
+                </div>
+
+                <button type="submit" className="btn-safety w-full py-4 flex items-center justify-center gap-3">
+                  <Save size={20} />
+                  UPDATE_SQUAD_DATA
                 </button>
               </form>
             </motion.div>

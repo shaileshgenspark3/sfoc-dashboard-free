@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { GroupService } from '../services/groupService.js';
+import Group from '../models/Group.js';
 
 export const createGroup = async (req: Request, res: Response) => {
   try {
@@ -27,8 +28,8 @@ export const joinGroup = async (req: Request, res: Response) => {
       }
     });
   } catch (error: any) {
-    res.status(error.message.includes('not found') ? 404 : 400).json({ 
-      error: error.message 
+    res.status(error.message.includes('not found') ? 404 : 400).json({
+      error: error.message
     });
   }
 };
@@ -57,6 +58,34 @@ export const getGroupByCode = async (req: Request, res: Response) => {
 };
 
 export const getAllGroups = async (req: Request, res: Response) => {
-  // Placeholder
-  res.status(501).json({ message: 'Not Implemented' });
+  try {
+    const groups = await Group.find({ isActive: true }).sort({ createdAt: -1 });
+    res.json(groups);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const updateGroup = async (req: Request, res: Response) => {
+  try {
+    const { code } = req.params;
+    const { groupName, description } = req.body;
+
+    const group = await Group.findOneAndUpdate(
+      { groupCode: code.toUpperCase() },
+      {
+        ...(groupName && { groupName }),
+        ...(description && { description })
+      },
+      { new: true }
+    );
+
+    if (!group) {
+      return res.status(404).json({ error: 'Group not found' });
+    }
+
+    res.json(group);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
 };

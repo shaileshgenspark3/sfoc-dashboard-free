@@ -69,16 +69,16 @@ export class ActivityService {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const lastActivityDate = participant.lastActivityDate 
-      ? new Date(participant.lastActivityDate) 
+    const lastActivityDate = participant.lastActivityDate
+      ? new Date(participant.lastActivityDate)
       : null;
-    
+
     if (lastActivityDate) {
       lastActivityDate.setHours(0, 0, 0, 0);
     }
 
     let newStreak = participant.streakDays;
-    
+
     if (!lastActivityDate) {
       newStreak = 1;
     } else {
@@ -99,12 +99,12 @@ export class ActivityService {
     participant.streakDays = newStreak;
     participant.lastActivityDate = new Date();
     if (derivedGroupCode) {
-        participant.groupCode = derivedGroupCode; // Update participant's group if derived
+      participant.groupCode = derivedGroupCode; // Update participant's group if derived
     }
-    
+
     // 6. Check for new Badges
     const newBadges = await BadgeService.checkNewBadges(participant, activity);
-    
+
     await participant.save();
 
     // 7. Real-time broadcast
@@ -113,7 +113,12 @@ export class ActivityService {
     return {
       activity,
       streak: newStreak,
-      newBadges
+      newBadges,
+      participant: {
+        name: participant.name,
+        individualCode: participant.individualCode,
+        profilePicture: participant.profilePicture
+      }
     };
   }
 
@@ -135,7 +140,7 @@ export class ActivityService {
 
     const totalDistance = allActivities.reduce((acc, curr) => acc + (curr.distance || 0), 0);
     const totalDuration = allActivities.reduce((acc, curr) => acc + (curr.duration || 0), 0);
-    
+
     // Recalculate points for old activities if they don't have it, or use stored points
     const totalPoints = allActivities.reduce((acc, curr) => {
       if (curr.points !== undefined && curr.points !== 0) {
@@ -163,7 +168,7 @@ export class ActivityService {
 
   static async getAllDataForExport() {
     const activities = await Activity.find().sort({ createdAt: -1 }).lean();
-    
+
     // CSV Header
     let csv = 'Date,Time,Participant Code,Name,Activity Type,Distance (KM),Duration (Min),Points,Group Code\n';
 
@@ -171,7 +176,7 @@ export class ActivityService {
       const date = new Date(act.createdAt);
       const dateStr = date.toLocaleDateString();
       const timeStr = date.toLocaleTimeString();
-      
+
       const line = [
         dateStr,
         timeStr,
@@ -183,7 +188,7 @@ export class ActivityService {
         act.points || 0,
         act.groupCode || 'N/A'
       ].join(',');
-      
+
       csv += line + '\n';
     });
 
@@ -199,17 +204,17 @@ export class ActivityService {
     if (!activity) throw new Error('Activity not found');
 
     const participant = await Participant.findOne({ individualCode: activity.participantCode });
-    
+
     if (participant) {
       participant.totalDistance -= activity.distance;
       participant.totalDuration -= activity.duration;
       participant.totalPoints -= activity.points;
-      
+
       // Note: Re-calculating streak is complex when deleting past activities. 
       // For simplicity, we just deduct the totals. 
       // If deleting the ONLY activity of today, we might want to check previous dates, 
       // but that requires more logic. We will accept this trade-off for now.
-      
+
       await participant.save();
     }
 
@@ -225,7 +230,7 @@ export class ActivityService {
     // 2. Calculate diffs
     const distanceDiff = (updates.distance || 0) - oldActivity.distance;
     const durationDiff = (updates.duration || 0) - oldActivity.duration;
-    
+
     // 3. Recalculate points if needed
     let newPoints = oldActivity.points;
     if (updates.distance !== undefined || updates.duration !== undefined || updates.activityType) {

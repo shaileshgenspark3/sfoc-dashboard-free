@@ -12,12 +12,14 @@ import StravaSyncJob from './src/jobs/stravaSyncJob.js';
 
 // Routes
 import activityRoutes from './src/routes/activities.js';
+import BackupJob from './src/jobs/backupJob.js';
 import participantRoutes from './src/routes/participants.js';
 import groupRoutes from './src/routes/groups.js';
 import settingsRoutes from './src/routes/settings.js';
 import vercelCronRoutes from './src/routes/cron.js';
 import adminRoutes from './src/routes/admin.js';
 import stravaRoutes from './src/routes/strava.js';
+import chatRoutes from './src/routes/chat.js';
 
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -59,6 +61,7 @@ app.use('/api/settings', settingsRoutes);
 app.use('/api/cron', vercelCronRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/strava', stravaRoutes);
+app.use('/api/chat', chatRoutes);
 
 // Static Files - Serve Frontend
 const frontendPath = path.join(__dirname, '../frontend/dist');
@@ -92,11 +95,12 @@ const startServer = async () => {
   try {
     console.log('🔗 Connecting to Database...');
     await connectDB();
-    
+
     // Start Cron Jobs only if enabled
     if (process.env.ENABLE_REMINDER_JOB !== 'false') {
       ReminderJob.start();
       StravaSyncJob.start();
+      BackupJob.start();
     }
 
     console.log('🏁 Starting HTTP server...');

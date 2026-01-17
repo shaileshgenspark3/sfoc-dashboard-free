@@ -1,0 +1,16 @@
+[
+  {
+    "_id": "696bd2277ed60276881cb642",
+    "participantCode": "1999",
+    "participantName": "Group 1000 Captain",
+    "activityType": "Cycling",
+    "distance": 10,
+    "duration": 0,
+    "points": 100,
+    "groupCode": "1000",
+    "date": "2026-01-17T18:17:11.517Z",
+    "createdAt": "2026-01-17T18:17:11.518Z",
+    "updatedAt": "2026-01-17T18:17:11.518Z",
+    "__v": 0
+  }
+]

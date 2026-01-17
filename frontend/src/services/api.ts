@@ -19,7 +19,7 @@ api.interceptors.response.use(
     // Standardize error message
     const message = error.response?.data?.error || error.response?.data?.message || error.message || 'Something went wrong';
     console.error('API Error:', message);
-    return Promise.reject({ ...error, message }); 
+    return Promise.reject({ ...error, message });
   }
 );
 
@@ -63,7 +63,7 @@ export interface Badge {
 }
 
 export const activitiesApi = {
-  submit: (data: ActivitySubmission) => api.post<{ activity: Activity, streak: number, newBadges: Badge[] }>('/activities/submit', data),
+  submit: (data: ActivitySubmission) => api.post<{ activity: Activity, streak: number, newBadges: Badge[], participant: Participant }>('/activities/submit', data),
   getStats: () => api.get<Stats>('/activities/stats'),
   getToday: () => api.get<Activity[]>('/activities/today'),
   getByParticipant: (code: string) => api.get<Activity[]>(`/activities/participant/${code}`),
@@ -92,7 +92,7 @@ export const participantsApi = {
   }),
   getByCode: (code: string) => api.get<Participant>(`/participants/code/${code}`),
   uploadProfilePicture: (code: string, formData: FormData) => api.post<{ success: boolean; profilePicture: string }>(
-    `/participants/${code}/upload-profile`, 
+    `/participants/${code}/upload-profile`,
     formData,
     {
       headers: { 'Content-Type': 'multipart/form-data' }
@@ -114,6 +114,8 @@ export const groupsApi = {
   getGroupActivities: (code: string) => api.get<Activity[]>(`/groups/${code}/activities`),
   create: (data: { groupName: string; description?: string; individualCode: string }) => api.post('/groups/create', data),
   join: (groupCode: string, individualCode: string) => api.post(`/groups/${groupCode}/join`, { individualCode }),
+  update: (code: string, data: { groupName?: string; description?: string }) => api.put(`/groups/${code}`, data),
+  getAll: () => api.get<Group[]>('/groups'),
 };
 
 export const stravaApi = {
@@ -130,6 +132,75 @@ export const adminApi = {
   getActivities: () => api.get<Activity[]>('/admin/activities'),
   updateActivity: (id: string, data: Partial<Activity>) => api.put(`/admin/activities/${id}`, data),
   deleteActivity: (id: string) => api.delete(`/admin/activities/${id}`),
+  syncStrava: () => api.post<{ success: boolean; count: number }>('/admin/sync-strava'),
+};
+
+// Chat Types
+export interface ChatMessage {
+  _id: string;
+  roomId: string;
+  roomType: 'global' | 'group' | 'direct';
+  senderCode: string;
+  senderName: string;
+  senderAvatar?: string;
+  content: string;
+  mentions: string[];
+  reactions: { emoji: string; userCodes: string[] }[];
+  readBy: string[];
+  isDeleted: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ChatRoom {
+  _id: string;
+  roomId: string;
+  roomType: 'global' | 'group' | 'direct';
+  participants: string[];
+  name: string;
+  description?: string;
+  avatar?: string;
+  lastMessage?: {
+    content: string;
+    senderName: string;
+    senderCode: string;
+    createdAt: string;
+  };
+  unreadCounts: Record<string, number>;
+  otherParticipant?: {
+    code: string;
+    name: string;
+    avatar?: string;
+  };
+}
+
+export interface MessagesResponse {
+  messages: ChatMessage[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    pages: number;
+  };
+}
+
+export const chatApi = {
+  getRooms: (userCode: string) =>
+    api.get<ChatRoom[]>(`/chat/rooms/${userCode}`),
+  getMessages: (roomId: string, page?: number) =>
+    api.get<MessagesResponse>(`/chat/messages/${encodeURIComponent(roomId)}`, { params: { page } }),
+  createDMRoom: (userCode1: string, userCode2: string) =>
+    api.post<ChatRoom>('/chat/rooms/direct', { userCode1, userCode2 }),
+  addReaction: (messageId: string, emoji: string, userCode: string) =>
+    api.post<ChatMessage>(`/chat/messages/${messageId}/reactions`, { emoji, userCode }),
+  markRead: (roomId: string, userCode: string) =>
+    api.put(`/chat/messages/${encodeURIComponent(roomId)}/read`, { userCode }),
+  searchMessages: (roomId: string, query: string) =>
+    api.get<ChatMessage[]>(`/chat/messages/${encodeURIComponent(roomId)}/search`, { params: { query } }),
+  deleteMessage: (messageId: string, userCode: string) =>
+    api.delete(`/chat/messages/${messageId}`, { data: { userCode } }),
+  getParticipants: (userCode: string) =>
+    api.get<Participant[]>(`/chat/participants/${userCode}`),
 };
 
 export default api;

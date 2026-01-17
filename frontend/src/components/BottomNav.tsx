@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Trophy, LayoutGrid, Plus, User, ShieldAlert, Users } from 'lucide-react';
+import { Trophy, LayoutGrid, Plus, User, ShieldAlert, Users, MessageCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { settingsApi } from '../services/api';
 
@@ -24,6 +24,7 @@ const BottomNav = () => {
 
   const navItems = [
     { path: '/', icon: LayoutGrid, label: 'HOME' },
+    { path: '/chat', icon: MessageCircle, label: 'CHAT' },
     { path: '/my-performance', icon: User, label: 'ME' },
     { path: '/group-performance', icon: Users, label: 'GROUP' },
     { path: '/submit', icon: Plus, label: 'SUBMIT', highlight: true },
@@ -37,7 +38,7 @@ const BottomNav = () => {
         {navItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.path);
-          
+
           return (
             <Link key={item.path} to={item.path} className="flex-1">
               <div className="flex flex-col items-center justify-center relative py-1">
@@ -48,19 +49,17 @@ const BottomNav = () => {
                     transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                   />
                 )}
-                <div className={`p-1.5 rounded-xl transition-all ${
-                  item.highlight 
-                    ? 'bg-[#FF6B35] text-black -translate-y-4 shadow-[0_4px_15px_rgba(255,107,53,0.4)] border-4 border-[#050505]' 
-                    : active 
-                    ? 'text-[#FF6B35]' 
+                <div className={`p-1.5 rounded-xl transition-all ${item.highlight
+                  ? 'bg-[#FF6B35] text-black -translate-y-4 shadow-[0_4px_15px_rgba(255,107,53,0.4)] border-4 border-[#050505]'
+                  : active
+                    ? 'text-[#FF6B35]'
                     : 'text-[#8C8C8C]'
-                }`}>
+                  }`}>
                   <Icon size={item.highlight ? 24 : 20} strokeWidth={active ? 2.5 : 2} />
                 </div>
                 {!item.highlight && (
-                  <span className={`text-[9px] font-black tracking-widest mt-0.5 ${
-                    active ? 'text-[#FF6B35]' : 'text-[#8C8C8C]'
-                  }`}>
+                  <span className={`text-[9px] font-black tracking-widest mt-0.5 ${active ? 'text-[#FF6B35]' : 'text-[#8C8C8C]'
+                    }`}>
                     {item.label}
                   </span>
                 )}

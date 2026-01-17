@@ -4,10 +4,18 @@ import EmailService from './emailService.js';
 import WhatsAppService from './whatsappService.js';
 import { BadgeService } from './badgeService.js';
 
+import Group from '../models/Group.js';
+
 // Helper to determine group from code
 const determineGroupCode = (code: string): string | null => {
   const codeNum = parseInt(code);
   if (!isNaN(codeNum)) {
+    // 1-999: SQUAD_1 to SQUAD_50 (20 users per squad)
+    if (codeNum >= 1 && codeNum <= 999) {
+      const squadNum = Math.ceil(codeNum / 20);
+      return `SQUAD_${squadNum}`;
+    }
+    // Existing ranges
     if (codeNum >= 1000 && codeNum < 2000) return '1000';
     if (codeNum >= 2000 && codeNum < 3000) return '2000';
     if (codeNum >= 3000 && codeNum < 4000) return '3000';
@@ -15,6 +23,30 @@ const determineGroupCode = (code: string): string | null => {
     if (codeNum >= 5000 && codeNum < 6000) return '5000';
   }
   return null;
+};
+
+// Helper to ensure auto-assigned groups exist
+const ensureGroupExists = async (groupCode: string) => {
+  try {
+    const existing = await Group.findOne({ groupCode });
+    if (!existing) {
+      // Create default group
+      // Format: SQUAD_1 -> "Squad 1"
+      const displayName = groupCode.startsWith('SQUAD_')
+        ? `Squad ${groupCode.split('_')[1]}`
+        : `Group ${groupCode}`;
+
+      await Group.create({
+        groupCode,
+        groupName: displayName,
+        createdBy: 'SYSTEM',
+        description: 'Auto-generated squad'
+      });
+      console.log(`✅ Auto-created group: ${groupCode}`);
+    }
+  } catch (err) {
+    console.error(`Failed to ensure group ${groupCode} exists:`, err);
+  }
 };
 
 export class ParticipantService {
@@ -55,6 +87,9 @@ export class ParticipantService {
 
     // 3. Determine Group Code (Auto-assign logic overrides manual unless null)
     const autoGroup = determineGroupCode(individualCode);
+    if (autoGroup) {
+      await ensureGroupExists(autoGroup);
+    }
     const finalGroupCode = autoGroup || groupCode || null;
 
     // 4. Create Participant
@@ -120,6 +155,9 @@ export class ParticipantService {
 
         // Auto Assign Group
         const groupCode = determineGroupCode(individualCode);
+        if (groupCode) {
+          await ensureGroupExists(groupCode);
+        }
 
         await Participant.create({
           name,
@@ -142,14 +180,14 @@ export class ParticipantService {
   }
 
   static async getByCode(code: string) {
-    const participant = await Participant.findOne({ 
-      individualCode: code.toUpperCase() 
+    const participant = await Participant.findOne({
+      individualCode: code.toUpperCase()
     });
     if (!participant) throw new Error('Invalid participant code.');
-    
+
     // Enrich badges with definitions
     const enrichedBadges = BadgeService.getParticipantBadges(participant);
-    
+
     return {
       ...participant.toObject(),
       badges: enrichedBadges

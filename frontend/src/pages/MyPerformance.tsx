@@ -2,15 +2,15 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import html2canvas from 'html2canvas';
-import { 
-  User, 
-  Search, 
-  Activity as ActivityIcon, 
-  Trophy, 
-  Flame, 
-  TrendingUp, 
-  Clock, 
-  MapPin, 
+import {
+  User,
+  Search,
+  Activity as ActivityIcon,
+  Trophy,
+  Flame,
+  TrendingUp,
+  Clock,
+  MapPin,
   ArrowLeft,
   LayoutGrid,
   Zap,
@@ -20,24 +20,24 @@ import {
   Camera,
   Share2
 } from 'lucide-react';
-import { 
-  ResponsiveContainer, 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
   PieChart,
   Pie,
   Cell
 } from 'recharts';
-import { activitiesApi, participantsApi, Participant, Activity, stravaApi } from '../services/api';
+import { activitiesApi, participantsApi, Participant, Activity, stravaApi, Badge } from '../services/api';
 import { format, isToday } from 'date-fns';
 import { useSearchParams } from 'react-router-dom';
 import { BadgesList } from '../components/BadgesList';
 import { AchievementPopup } from '../components/AchievementPopup';
-import { SocialShareCard } from '../components/SocialShareCard';
+import { StunningStatsShareCard } from '../components/StunningStatsShareCard';
 import { getAssetUrl } from '../utils/urlHelper';
 
 const CHART_COLORS = ['#FF6B35', '#FF8C5A', '#CC4E14', '#E0E0E0', '#4A4A4A'];
@@ -88,7 +88,7 @@ const MyPerformance = () => {
 
   const handleProfileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || !e.target.files[0] || !participant) return;
-    
+
     const file = e.target.files[0];
     if (file.size > 5 * 1024 * 1024) {
       toast.error('FILE_SIZE_EXCEEDED: MAX_5MB');
@@ -122,22 +122,22 @@ const MyPerformance = () => {
     try {
       // Small delay to ensure render
       await new Promise(resolve => setTimeout(resolve, 100));
-      
+
       const canvas = await html2canvas(shareCardRef.current, {
-        scale: 2,
+        scale: 4,
         backgroundColor: '#000000',
         useCORS: true,
         allowTaint: true,
         logging: false,
         imageTimeout: 0
-      });
+      } as any);
 
       const image = canvas.toDataURL('image/png', 1.0);
       const link = document.createElement('a');
       link.download = `FIT-O-CHARITY_${format(new Date(), 'yyyy-MM-dd')}.png`;
       link.href = image;
       link.click();
-      
+
       toast.success('DOWNLOAD_COMPLETE: READY_FOR_UPLOAD', { id: 'share' });
     } catch (err) {
       console.error(err);
@@ -162,15 +162,16 @@ const MyPerformance = () => {
     setSyncing(true);
     try {
       const res = await stravaApi.sync(participant.individualCode);
-      if (res.data.syncedCount > 0) {
-        toast.success(`SYNC_COMPLETE: ${res.data.syncedCount}_NEW_ACTIVITIES`);
+      const data = res.data as any;
+      if (data.syncedCount > 0) {
+        toast.success(`SYNC_COMPLETE: ${data.syncedCount}_NEW_ACTIVITIES`);
         // Refresh data
         const aRes = await activitiesApi.getByParticipant(participant.individualCode);
         setActivities(aRes.data);
-        
+
         // Check for new badges
-        if (res.data.newBadges && res.data.newBadges.length > 0) {
-          setNewBadges(res.data.newBadges);
+        if (data.newBadges && data.newBadges.length > 0) {
+          setNewBadges(data.newBadges);
           // Also refresh participant to show badges in list
           const pRes = await participantsApi.getByCode(participant.individualCode);
           setParticipant(pRes.data);
@@ -212,7 +213,7 @@ const MyPerformance = () => {
   if (!isAuthenticated) {
     return (
       <div className="min-h-[80vh] flex items-center justify-center px-4">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           className="industrial-panel p-8 md:p-12 max-w-md w-full border-l-4 border-l-[#FF6B35]"
@@ -231,8 +232,8 @@ const MyPerformance = () => {
             <form onSubmit={handleLogin} className="space-y-6 text-left">
               <div className="space-y-2">
                 <label className="tech-label text-white">OPERATIVE_UID</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   autoFocus
                   placeholder="ENTER_CODE"
                   className="w-full bg-[#050505] border-2 border-[#2D2D2D] p-5 md:p-6 text-white text-center text-3xl md:text-4xl font-black tracking-[0.3em] focus:border-[#FF6B35] outline-none transition-all uppercase placeholder:text-[#1A1A1A]"
@@ -241,8 +242,8 @@ const MyPerformance = () => {
                 />
               </div>
 
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 disabled={loading}
                 className="btn-safety w-full py-5 flex items-center justify-center gap-4 text-xl shadow-[8px_8px_0px_0px_#000]"
               >
@@ -258,7 +259,7 @@ const MyPerformance = () => {
 
   return (
     <div className="space-y-8 py-6 md:py-12">
-      <AchievementPopup badges={newBadges} onClose={() => setNewBadges([])} />
+      <AchievementPopup badges={newBadges} participant={participant} onClose={() => setNewBadges([])} />
       {/* Mobile-Friendly Header */}
       <header className="flex flex-col md:flex-row md:items-end justify-between border-b-2 border-[#FF6B35] pb-6 gap-4 px-2">
         <div className="flex flex-col md:flex-row md:items-end gap-4 md:gap-8">
@@ -266,9 +267,9 @@ const MyPerformance = () => {
           <div className="relative group">
             <div className="w-24 h-24 md:w-32 md:h-32 rounded-xl overflow-hidden border-2 border-[#FF6B35] bg-black relative">
               {participant?.profilePicture ? (
-                <img 
+                <img
                   src={getAssetUrl(participant.profilePicture)}
-                  alt="Profile" 
+                  alt="Profile"
                   className="w-full h-full object-cover"
                 />
               ) : (
@@ -282,18 +283,18 @@ const MyPerformance = () => {
                 </div>
               )}
             </div>
-            
-            <button 
+
+            <button
               onClick={() => fileInputRef.current?.click()}
               className="absolute -bottom-2 -right-2 p-2 bg-[#FF6B35] text-black hover:bg-white transition-colors shadow-lg"
               disabled={uploadingProfile}
             >
               <Camera size={16} />
             </button>
-            <input 
-              type="file" 
-              ref={fileInputRef} 
-              className="hidden" 
+            <input
+              type="file"
+              ref={fileInputRef}
+              className="hidden"
               accept="image/*"
               onChange={handleProfileUpload}
             />
@@ -305,16 +306,16 @@ const MyPerformance = () => {
               {participant?.name}
             </h1>
           </div>
-          
+
           <div className="flex gap-2 pb-1">
-            <button 
+            <button
               onClick={handleStravaConnect}
               className="flex items-center gap-2 px-3 py-1.5 bg-[#FC4C02] text-white text-[10px] font-black hover:bg-[#E34402] transition-colors uppercase tracking-widest"
             >
               <Zap size={14} fill="currentColor" />
               CONNECT_STRAVA
             </button>
-            <button 
+            <button
               onClick={handleStravaSync}
               disabled={syncing}
               className="flex items-center gap-2 px-3 py-1.5 border border-[#FC4C02] text-[#FC4C02] text-[10px] font-black hover:bg-[#FC4C02] hover:text-white transition-all uppercase tracking-widest disabled:opacity-50"
@@ -340,7 +341,7 @@ const MyPerformance = () => {
             </button>
           </div>
         </div>
-        <button 
+        <button
           onClick={logout}
           className="flex items-center justify-center gap-2 px-4 py-2 border border-[#3F3F3F] text-[10px] font-black text-[#8C8C8C] hover:text-white hover:border-[#FF6B35] transition-all uppercase tracking-widest bg-[#1A1A1A]/50"
         >
@@ -357,7 +358,7 @@ const MyPerformance = () => {
           { label: 'DISTANCE', val: `${participant?.totalDistance.toFixed(1)} KM`, icon: TrendingUp },
           { label: 'DURATION', val: `${participant?.totalDuration} MIN`, icon: Clock },
         ].map((stat, i) => (
-          <motion.div 
+          <motion.div
             key={i}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -386,7 +387,7 @@ const MyPerformance = () => {
                 <CartesianGrid strokeDasharray="3 3" stroke="#1A1A1A" vertical={false} />
                 <XAxis dataKey="date" stroke="#444" fontSize={9} tickLine={false} axisLine={false} />
                 <YAxis stroke="#444" fontSize={9} tickLine={false} axisLine={false} />
-                <Tooltip 
+                <Tooltip
                   cursor={{ fill: 'rgba(255, 107, 53, 0.05)' }}
                   contentStyle={{ backgroundColor: '#0D0D0D', border: '1px solid #FF6B3533', borderRadius: '0px' }}
                   itemStyle={{ color: '#FF6B35', fontSize: '11px', fontWeight: 'bold' }}
@@ -418,7 +419,7 @@ const MyPerformance = () => {
                     <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip 
+                <Tooltip
                   contentStyle={{ backgroundColor: '#0D0D0D', border: '1px solid #FF6B3533', borderRadius: '0px', fontSize: '10px' }}
                 />
               </PieChart>
@@ -441,7 +442,7 @@ const MyPerformance = () => {
           <Medal size={20} className="text-neon-green" />
           <div className="tech-label text-neon-green">TACTICAL_MEDALS: ACHIEVEMENT_PROTOCOL</div>
         </div>
-        <BadgesList earnedBadges={participant?.badges || []} />
+        <BadgesList earnedBadges={participant?.badges || []} participant={participant} />
       </div>
 
       {/* Activity Log - Better for Mobile */}
@@ -453,7 +454,7 @@ const MyPerformance = () => {
           </div>
           <span className="text-[10px] font-bold text-gray-600">RECORDS: {activities.length}</span>
         </div>
-        
+
         {/* Card-style log for mobile, table for desktop */}
         <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left">
@@ -518,7 +519,7 @@ const MyPerformance = () => {
       {/* Hidden Share Card for Generation */}
       {participant && (
         <div className="fixed left-[-9999px] top-[-9999px]">
-          <SocialShareCard 
+          <StunningStatsShareCard
             ref={shareCardRef}
             participant={participant}
             todayActivities={activities.filter(a => isToday(new Date(a.createdAt)))}

@@ -7,6 +7,7 @@ import Leaderboard from './pages/Leaderboard';
 import AdminDashboard from './pages/AdminDashboard';
 import MyPerformance from './pages/MyPerformance';
 import GroupPerformance from './pages/GroupPerformance';
+import ChatPage from './pages/ChatPage';
 import Navbar from './components/Navbar';
 import BottomNav from './components/BottomNav';
 
@@ -15,7 +16,7 @@ function App() {
     <Router>
       <div className="min-h-screen relative bg-[#050505]">
         <div className="mesh-bg fixed inset-0 pointer-events-none" />
-        <Toaster 
+        <Toaster
           position="top-center"
           toastOptions={{
             duration: 3000,
@@ -41,6 +42,8 @@ function App() {
             <Route path="/group/:groupCode" element={<GroupDashboard />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/my-performance" element={<MyPerformance />} />
+            <Route path="/chat" element={<ChatPage />} />
+            <Route path="/chat/:roomId" element={<ChatPage />} />
           </Routes>
         </div>
         <BottomNav />
