@@ -120,8 +120,18 @@ const MyPerformance = () => {
     toast.loading('GENERATING_SOCIAL_CARD...', { id: 'share' });
 
     try {
-      // Small delay to ensure render
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Ensure all images in the card are fully loaded
+      const images = Array.from(shareCardRef.current.querySelectorAll('img'));
+      await Promise.all(images.map(img => {
+        if (img.complete) return Promise.resolve();
+        return new Promise((resolve) => {
+          img.onload = resolve;
+          img.onerror = resolve; // Don't block if one image fails
+        });
+      }));
+
+      // Small delay to ensure render updates after load
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       const canvas = await html2canvas(shareCardRef.current, {
         scale: 4,
