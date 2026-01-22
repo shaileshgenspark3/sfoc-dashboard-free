@@ -3,27 +3,9 @@ import { generateCode } from '../utils/codeGenerator.js';
 import EmailService from './emailService.js';
 import WhatsAppService from './whatsappService.js';
 import { BadgeService } from './badgeService.js';
+import { determineGroupCode } from '../utils/validation.js';
 
 import Group from '../models/Group.js';
-
-// Helper to determine group from code
-const determineGroupCode = (code: string): string | null => {
-  const codeNum = parseInt(code);
-  if (!isNaN(codeNum)) {
-    // 1-999: SQUAD_1 to SQUAD_50 (20 users per squad)
-    if (codeNum >= 1 && codeNum <= 999) {
-      const squadNum = Math.ceil(codeNum / 20);
-      return `SQUAD_${squadNum}`;
-    }
-    // Existing ranges
-    if (codeNum >= 1000 && codeNum < 2000) return '1000';
-    if (codeNum >= 2000 && codeNum < 3000) return '2000';
-    if (codeNum >= 3000 && codeNum < 4000) return '3000';
-    if (codeNum >= 4000 && codeNum < 5000) return '4000';
-    if (codeNum >= 5000 && codeNum < 6000) return '5000';
-  }
-  return null;
-};
 
 // Helper to ensure auto-assigned groups exist
 const ensureGroupExists = async (groupCode: string) => {

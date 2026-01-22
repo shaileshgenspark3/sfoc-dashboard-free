@@ -14,12 +14,20 @@ export const validateActivity = (data: unknown) => {
 
 export const determineGroupCode = (code: string): string | null => {
   const codeNum = parseInt(code);
-  if (!isNaN(codeNum)) {
-    if (codeNum >= 1000 && codeNum < 2000) return '1000';
-    if (codeNum >= 2000 && codeNum < 3000) return '2000';
-    if (codeNum >= 3000 && codeNum < 4000) return '3000';
-    if (codeNum >= 4000 && codeNum < 5000) return '4000';
-    if (codeNum >= 5000 && codeNum < 6000) return '5000';
+  if (isNaN(codeNum)) return null;
+
+  // 1-999: SQUAD_1 to SQUAD_50 (20 users per squad)
+  if (codeNum >= 1 && codeNum <= 999) {
+    const squadNum = Math.ceil(codeNum / 20);
+    return `SQUAD_${squadNum}`;
   }
+
+  // Group by thousands: 1000-1999 -> '1000', 10000-10999 -> '10000', etc.
+  // Supports up to 50,000 and beyond dynamically.
+  if (codeNum >= 1000) {
+    const groupStart = Math.floor(codeNum / 1000) * 1000;
+    return groupStart.toString();
+  }
+
   return null;
 };
