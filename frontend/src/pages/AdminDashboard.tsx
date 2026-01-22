@@ -20,17 +20,21 @@ import {
   Save,
   RefreshCw
 } from 'lucide-react';
-import { participantsApi, settingsApi, adminApi, groupsApi, Activity } from '../services/api';
+import { participantsApi, settingsApi, adminApi, groupsApi, Activity, Participant } from '../services/api';
 import { format } from 'date-fns';
 
 const AdminDashboard = () => {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [password, setPassword] = useState('');
-  const [activeTab, setActiveTab] = useState<'manual' | 'bulk' | 'activities' | 'groups'>('manual');
+  const [activeTab, setActiveTab] = useState<'manual' | 'bulk' | 'activities' | 'groups' | 'users'>('manual');
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loadingActivities, setLoadingActivities] = useState(false);
   const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
+  const [users, setUsers] = useState<Participant[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  const [editingUser, setEditingUser] = useState<Participant | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const [syncLoading, setSyncLoading] = useState(false);
 
   const [manualData, setManualData] = useState({
@@ -59,6 +63,9 @@ const AdminDashboard = () => {
     }
     if (isAuthorized && activeTab === 'groups') {
       fetchGroups();
+    }
+    if (isAuthorized && activeTab === 'users') {
+      fetchUsers();
     }
   }, [isAuthorized, activeTab]);
 
@@ -178,6 +185,18 @@ const AdminDashboard = () => {
     }
   };
 
+  const fetchUsers = async () => {
+    setLoadingUsers(true);
+    try {
+      const res = await adminApi.getAllParticipants();
+      setUsers(res.data);
+    } catch (err) {
+      toast.error('Failed to fetch users');
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
+
   const handleUpdateGroup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingGroup) return;
@@ -191,6 +210,36 @@ const AdminDashboard = () => {
       toast.success('GROUP_UPDATED');
     } catch (err) {
       toast.error('UPDATE_FAILED');
+    }
+  };
+
+  const handleUpdateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingUser || !editingUser._id) return;
+    try {
+      const res = await adminApi.updateParticipant(editingUser._id, {
+        name: editingUser.name,
+        email: editingUser.email,
+        mobile: editingUser.mobile,
+        groupCode: editingUser.groupCode,
+        activityType: editingUser.activityType
+      });
+      setUsers(users.map(u => u._id === editingUser._id ? res.data : u));
+      setEditingUser(null);
+      toast.success('USER_UPDATED');
+    } catch (err) {
+      toast.error('UPDATE_FAILED');
+    }
+  };
+
+  const handleDeleteUser = async (id: string) => {
+    if (!window.confirm('CRITICAL WARNING: This will delete the user, all their activities, messages, and group membership. This cannot be undone. Confirm?')) return;
+    try {
+      await adminApi.deleteParticipant(id);
+      setUsers(users.filter(u => u._id !== id));
+      toast.success('USER_TERMINATED');
+    } catch (err) {
+      toast.error('TERMINATION_FAILED');
     }
   };
 
@@ -298,6 +347,12 @@ const AdminDashboard = () => {
           className={`px-6 py-3 font-bold tracking-widest text-xs transition-all ${activeTab === 'groups' ? 'bg-[#FF6B35] text-black' : 'bg-[#1A1A1A] text-gray-500 border border-[#2D2D2D]'}`}
         >
           MANAGE_SQUADS
+        </button>
+        <button
+          onClick={() => setActiveTab('users')}
+          className={`px-6 py-3 font-bold tracking-widest text-xs transition-all ${activeTab === 'users' ? 'bg-[#FF6B35] text-black' : 'bg-[#1A1A1A] text-gray-500 border border-[#2D2D2D]'}`}
+        >
+          MANAGE_USERS
         </button>
       </div>
 
@@ -556,6 +611,89 @@ const AdminDashboard = () => {
                 </div>
               </motion.div>
             )}
+
+            {activeTab === 'users' && (
+              <motion.div
+                key="users"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                className="industrial-panel p-0 overflow-hidden"
+              >
+                <div className="p-6 border-b border-[#2D2D2D] bg-[#1A1A1A] flex justify-between items-center">
+                  <div className="flex items-center gap-3">
+                    <Users className="text-[#FF6B35]" size={20} />
+                    <h3 className="text-xl font-bold uppercase tracking-tight">MANAGE USERS</h3>
+                  </div>
+                  <input 
+                    type="text" 
+                    placeholder="SEARCH CODE OR NAME..." 
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="bg-[#0D0D0D] border border-[#333] p-2 text-xs text-white w-64 focus:border-[#FF6B35] outline-none"
+                  />
+                </div>
+
+                <div className="max-h-[600px] overflow-y-auto">
+                  {loadingUsers ? (
+                    <div className="p-12 text-center text-gray-500">Retrieving operatives...</div>
+                  ) : (
+                    <table className="w-full text-left">
+                      <thead className="bg-[#0D0D0D] sticky top-0 z-10">
+                        <tr className="text-[10px] font-bold text-gray-500 uppercase tracking-widest border-b border-[#2D2D2D]">
+                          <th className="p-4">Identity</th>
+                          <th className="p-4">Contact</th>
+                          <th className="p-4">Squad</th>
+                          <th className="p-4">Stats</th>
+                          <th className="p-4 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#2D2D2D]">
+                        {users.filter(u => 
+                          u.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          u.individualCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          (u.email && u.email.toLowerCase().includes(searchQuery.toLowerCase()))
+                        ).map((user) => (
+                          <tr key={user._id} className="hover:bg-[#1F1F1F] transition-colors">
+                            <td className="p-4">
+                              <div className="text-sm font-bold text-white">{user.name}</div>
+                              <div className="text-[10px] text-[#FF6B35] font-mono">{user.individualCode}</div>
+                            </td>
+                            <td className="p-4 text-xs text-gray-400">
+                              <div>{user.email || 'N/A'}</div>
+                              <div>{user.mobile || 'N/A'}</div>
+                            </td>
+                            <td className="p-4">
+                                <span className="text-[10px] font-mono bg-[#333] px-1 rounded text-white">{user.groupCode || 'SOLO'}</span>
+                            </td>
+                            <td className="p-4 text-xs font-bold text-gray-300">
+                              <div>{user.totalPoints} PTS</div>
+                              <div className="text-[10px] text-gray-500">{user.totalDistance}KM | {user.totalDuration}MIN</div>
+                            </td>
+                            <td className="p-4 text-right">
+                              <div className="flex justify-end gap-2">
+                                <button
+                                  onClick={() => setEditingUser(user)}
+                                  className="p-2 hover:text-[#FF6B35] transition-colors"
+                                >
+                                  <Edit2 size={16} />
+                                </button>
+                                <button
+                                  onClick={() => user._id && handleDeleteUser(user._id)}
+                                  className="p-2 hover:text-red-500 transition-colors"
+                                >
+                                  <Trash2 size={16} />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              </motion.div>
+            )}
           </AnimatePresence>
         </div>
 
@@ -725,6 +863,97 @@ const AdminDashboard = () => {
                 <button type="submit" className="btn-safety w-full py-4 flex items-center justify-center gap-3">
                   <Save size={20} />
                   UPDATE_SQUAD_DATA
+                </button>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+      {/* Edit User Modal */}
+      <AnimatePresence>
+        {editingUser && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="industrial-panel p-8 w-full max-w-lg border-2 border-[#FF6B35]"
+            >
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-2xl font-black uppercase tracking-tighter text-white">EDIT_OPERATIVE</h3>
+                <button onClick={() => setEditingUser(null)} className="text-gray-500 hover:text-white">
+                  <X size={24} />
+                </button>
+              </div>
+
+              <form onSubmit={handleUpdateUser} className="space-y-6">
+                <div className="space-y-2">
+                  <label className="tech-label text-white">Code (Immutable)</label>
+                  <input
+                    type="text"
+                    disabled
+                    className="w-full bg-[#050505] border border-[#3F3F3F] p-3 text-gray-500 cursor-not-allowed"
+                    value={editingUser.individualCode}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="tech-label text-white">Full Name</label>
+                  <input
+                    type="text"
+                    required
+                    className="w-full bg-[#050505] border border-[#3F3F3F] p-3 text-white focus:border-[#FF6B35] outline-none"
+                    value={editingUser.name}
+                    onChange={e => setEditingUser({ ...editingUser, name: e.target.value })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                    <label className="tech-label text-white">Email</label>
+                    <input
+                      type="email"
+                      className="w-full bg-[#050505] border border-[#3F3F3F] p-3 text-white focus:border-[#FF6B35] outline-none"
+                      value={editingUser.email || ''}
+                      onChange={e => setEditingUser({ ...editingUser, email: e.target.value })}
+                    />
+                </div>
+
+                <div className="space-y-2">
+                    <label className="tech-label text-white">Mobile</label>
+                    <input
+                      type="text"
+                      className="w-full bg-[#050505] border border-[#3F3F3F] p-3 text-white focus:border-[#FF6B35] outline-none"
+                      value={editingUser.mobile || ''}
+                      onChange={e => setEditingUser({ ...editingUser, mobile: e.target.value })}
+                    />
+                </div>
+
+                <div className="space-y-2">
+                    <label className="tech-label text-white">Squad Code</label>
+                    <input
+                      type="text"
+                      className="w-full bg-[#050505] border border-[#3F3F3F] p-3 text-white focus:border-[#FF6B35] outline-none uppercase"
+                      value={editingUser.groupCode || ''}
+                      onChange={e => setEditingUser({ ...editingUser, groupCode: e.target.value.toUpperCase() })}
+                    />
+                </div>
+                
+                <div className="space-y-2">
+                    <label className="tech-label text-white">Primary Activity</label>
+                    <select
+                      className="w-full bg-[#050505] border border-[#3F3F3F] p-3 text-white focus:border-[#FF6B35] outline-none"
+                      value={editingUser.activityType || 'Walking'}
+                      onChange={e => setEditingUser({ ...editingUser, activityType: e.target.value })}
+                    >
+                         {['Walking', 'Running', 'Cycling', 'Yoga', 'Gym', 'Other'].map(type => (
+                        <option key={type} value={type}>{type.toUpperCase()}</option>
+                      ))}
+                    </select>
+                </div>
+
+                <button type="submit" className="btn-safety w-full py-4 flex items-center justify-center gap-3">
+                  <Save size={20} />
+                  UPDATE_OPERATIVE_DATA
                 </button>
               </form>
             </motion.div>

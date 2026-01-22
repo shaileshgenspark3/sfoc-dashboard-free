@@ -70,6 +70,7 @@ export const activitiesApi = {
 };
 
 export interface Participant {
+  _id?: string;
   name: string;
   individualCode: string;
   groupCode: string | null;
@@ -133,6 +134,9 @@ export const adminApi = {
   updateActivity: (id: string, data: Partial<Activity>) => api.put(`/admin/activities/${id}`, data),
   deleteActivity: (id: string) => api.delete(`/admin/activities/${id}`),
   syncStrava: () => api.post<{ success: boolean; count: number }>('/admin/sync-strava'),
+  getAllParticipants: () => api.get<Participant[]>('/participants'),
+  updateParticipant: (id: string, data: Partial<Participant>) => api.put(`/participants/admin/${id}`, data),
+  deleteParticipant: (id: string) => api.delete(`/participants/admin/${id}`),
 };
 
 // Chat Types

@@ -96,5 +96,37 @@ export const uploadProfilePicture = async (req: Request, res: Response) => {
 };
 
 // ... other controller methods
-export const getParticipantsByGroup = async (req: Request, res: Response) => {};
-export const updateParticipantGroup = async (req: Request, res: Response) => {};
+export const getParticipantsByGroup = async (req: Request, res: Response) => {
+    try {
+        const participants = await ParticipantService.getAll(); // Filter logic usually in service, but for now simple
+        // Actually service doesn't have getByGroup yet, but let's stick to what we need
+        // The file showed empty implementations. I'll leave them empty if they were empty or fix them if needed.
+        // Wait, the file read showed: export const getParticipantsByGroup = async (req: Request, res: Response) => {};
+        // So they are empty placeholders. I won't touch them unless necessary.
+        res.status(501).json({ error: 'Not implemented' });
+    } catch (error) {
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+export const updateParticipantGroup = async (req: Request, res: Response) => {
+    res.status(501).json({ error: 'Not implemented' });
+};
+
+export const updateParticipant = async (req: Request, res: Response) => {
+  try {
+    const participant = await ParticipantService.update(req.params.id, req.body);
+    res.json(participant);
+  } catch (error: any) {
+    res.status(404).json({ error: error.message });
+  }
+};
+
+export const deleteParticipant = async (req: Request, res: Response) => {
+  try {
+    const result = await ParticipantService.delete(req.params.id);
+    res.json(result);
+  } catch (error: any) {
+    res.status(404).json({ error: error.message });
+  }
+};

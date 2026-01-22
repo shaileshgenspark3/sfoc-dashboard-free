@@ -6,6 +6,8 @@ import { BadgeService } from './badgeService.js';
 import { determineGroupCode } from '../utils/validation.js';
 
 import Group from '../models/Group.js';
+import Activity from '../models/Activity.js';
+import Message from '../models/Message.js';
 
 // Helper to ensure auto-assigned groups exist
 const ensureGroupExists = async (groupCode: string) => {
@@ -195,5 +197,37 @@ export class ParticipantService {
     );
     if (!participant) throw new Error('Participant not found');
     return participant;
+  }
+
+  static async update(id: string, data: Partial<IParticipant>) {
+    const participant = await Participant.findByIdAndUpdate(id, data, { new: true });
+    if (!participant) throw new Error('Participant not found');
+    return participant;
+  }
+
+  static async delete(id: string) {
+    const participant = await Participant.findById(id);
+    if (!participant) throw new Error('Participant not found');
+
+    const { individualCode, groupCode } = participant;
+
+    // 1. Delete Activities
+    await Activity.deleteMany({ participantCode: individualCode });
+
+    // 2. Remove from Group
+    if (groupCode) {
+      await Group.updateOne(
+        { groupCode },
+        { $pull: { members: { individualCode } } }
+      );
+    }
+
+    // 3. Delete Messages (sender)
+    await Message.deleteMany({ senderCode: individualCode });
+
+    // 4. Delete Participant
+    await Participant.findByIdAndDelete(id);
+
+    return { message: `Successfully deleted participant ${individualCode} and all related data.` };
   }
 }

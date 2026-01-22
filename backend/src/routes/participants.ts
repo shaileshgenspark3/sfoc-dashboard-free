@@ -10,7 +10,9 @@ import {
   updateParticipantGroup, 
   getLeaderboard,
   bulkImportParticipants,
-  uploadProfilePicture
+  uploadProfilePicture,
+  updateParticipant,
+  deleteParticipant
 } from '../controllers/participantController.js';
 
 const storage = multer.diskStorage({
@@ -54,5 +56,9 @@ router.get('/group/:groupCode', getParticipantsByGroup);
 router.put('/:code/join-group', updateParticipantGroup);
 router.get('/leaderboard', getLeaderboard);
 router.post('/:code/upload-profile', uploadProfile.single('image'), uploadProfilePicture);
+
+// Admin Routes
+router.put('/admin/:id', updateParticipant);
+router.delete('/admin/:id', deleteParticipant);
 
 export default router;
