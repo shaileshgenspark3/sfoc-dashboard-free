@@ -150,8 +150,8 @@ export const SocialShareCard = forwardRef<HTMLDivElement, Props>(({ participant,
       <div className="mt-auto bg-[#1A1A1A] p-16 flex items-center justify-between border-t-4 border-[#FF6B35] relative z-10">
         <div className="flex items-center gap-8">
           <div className="bg-white p-4 rounded-xl">
-            <QRCodeSVG 
-              value="https://fit-o-charity-chatbot.vercel.app/"
+            <QRCodeSVG
+              value="https://www.fitocharity.site/"
               size={180}
               level="H"
               includeMargin={false}
@@ -161,7 +161,7 @@ export const SocialShareCard = forwardRef<HTMLDivElement, Props>(({ participant,
             <h3 className="text-4xl font-black uppercase text-white">Join the Mission</h3>
             <div className="flex items-center gap-3 text-2xl text-gray-400 font-mono">
               <ExternalLink size={24} />
-              fit-o-charity-chatbot.vercel.app
+              fitocharity.site
             </div>
             <p className="text-xl text-[#FF6B35] font-bold mt-2">SCAN TO KNOW MORE</p>
           </div>

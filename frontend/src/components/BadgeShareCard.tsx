@@ -96,7 +96,7 @@ export const BadgeShareCard = forwardRef<HTMLDivElement, Props>(({ participant, 
                 </div>
 
                 <div className="bg-white p-2 rounded">
-                    <QRCodeSVG value={`https://fit-o-charity.app/profile/${participant.individualCode}`} size={60} />
+                    <QRCodeSVG value={`https://www.fitocharity.site/profile/${participant.individualCode}`} size={60} />
                 </div>
             </div>
         </div>

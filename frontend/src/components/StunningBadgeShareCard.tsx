@@ -135,7 +135,7 @@ export const StunningBadgeShareCard = forwardRef<HTMLDivElement, Props>(({ parti
                     <div className="flex items-center gap-8 bg-white/5 pr-8 rounded-2xl border border-white/5">
                         <div className="bg-white p-3 h-full rounded-l-xl">
                             <QRCodeSVG
-                                value="https://fit-o-charity.app"
+                                value="https://www.fitocharity.site"
                                 size={100}
                                 level="Q"
                             />

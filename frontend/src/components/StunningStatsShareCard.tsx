@@ -242,11 +242,11 @@ export const StunningStatsShareCard = forwardRef<HTMLDivElement, Props>(({ parti
                         <div className="text-right">
                             <p className="text-gray-400 text-lg font-bold uppercase tracking-[0.2em] mb-3">Scan to Join</p>
                             <div className="flex items-center gap-4 text-white font-black text-3xl">
-                                <ExternalLink size={32} /> fit-o-charity.app
+                                <ExternalLink size={32} /> fitocharity.site
                             </div>
                         </div>
                         <div className="bg-white p-4 rounded-3xl shadow-[0_0_40px_rgba(255,255,255,0.2)]">
-                            <QRCodeSVG value="https://fit-o-charity.app" size={160} level="H" />
+                            <QRCodeSVG value="https://www.fitocharity.site" size={160} level="H" />
                         </div>
                     </div>
                 </div>
