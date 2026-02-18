@@ -1,0 +1,8 @@
+[phases.build]
+cmds = ["npm install", "npm run build"]
+
+[phases.start]
+cmds = ["node dist/server.js"]
+
+[start]
+cmd = "node dist/server.js"
