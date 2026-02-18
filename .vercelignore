@@ -1,0 +1,13 @@
+backend
+api
+conductor
+node_modules
+.env*
+uploads
+backups
+*.md
+!README.md
+docker-compose.yml
+Dockerfile
+railway.toml
+render.yaml

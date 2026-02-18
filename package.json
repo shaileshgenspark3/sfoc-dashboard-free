@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "install-deps": "npm install && cd frontend && npm install && cd ../backend && npm install",
-    "build": "cd backend && npx tsc --project tsconfig.json && cd ../frontend && npm run build",
+    "build": "cd frontend && npm run build",
+    "build:backend": "cd backend && npx tsc --project tsconfig.json",
     "deploy:railway": "echo 'Preparing for Railway deployment...'"
   },
   "dependencies": {
